@@ -12,6 +12,23 @@
     #map { height: 90vh; width: 100vw; }
     body { margin:0; }
     .photo-gallery img {max-width:140px;max-height:100px;margin:3px;border-radius:8px; cursor:pointer;}
+    .btn-postuler {
+      font-size: 1.1em;
+      background: #f9d875; /* jaune sable */
+      color: #4b3c10;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 10px;
+      margin: 8px 0;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 6px #ddd;
+      transition: background 0.15s;
+      display: inline-block;
+    }
+    .btn-postuler:hover {
+      background: #ffe49c;
+    }
   </style>
 </head>
 <body>
@@ -25,15 +42,14 @@
     }
     window.showLightbox = showLightbox;
 
-    // Formulaire de candidature (postuler)
     function openPostulerForm(email, contact, marker) {
       var popupForm = `
         <b>Postuler à cette offre</b><br>
         Votre nom :<br><input type="text" id="candidatNom"><br>
         Votre email :<br><input type="email" id="candidatEmail"><br>
         Message :<br><textarea id="candidatMsg"></textarea><br>
-        <button type="button" id="sendCandidature">Envoyer</button>
-        <button type="button" id="cancelCandidature">Annuler</button>
+        <button type="button" id="sendCandidature" style="background:#f9d875;color:#4b3c10;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:6px;">Envoyer</button>
+        <button type="button" id="cancelCandidature" style="margin-left:8px;">Annuler</button>
       `;
       marker.setPopupContent(popupForm);
 
@@ -42,7 +58,6 @@
           marker.closePopup();
         };
         document.getElementById('sendCandidature').onclick = function() {
-          // Ici, tu ajouteras la logique d'email automatique à la prochaine étape
           alert("Merci pour votre candidature ! (Le mail sera envoyé automatiquement lors de la prochaine étape)");
           marker.closePopup();
         };
@@ -62,7 +77,6 @@
                 urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="window.showLightbox('${u.trim()}')">` : "").join("") +
                 '</div>';
             }
-            // Contenu de la popup de l'offre
             var popupHtml =
               `<b>${offre["Titre de l’offre"] || ''}</b><br>
               ${offre["Nom de la struct"] || ''}<br>
@@ -111,8 +125,7 @@
           Photos :<br>
           <input type="text" id="photoURL" name="photos" placeholder="Lien(s) photo..." readonly style="width:70%;"> 
           <button type="button" id="cloudinaryBtn">Uploader des photos</button><br>
-          <small>Pour plusieurs photos, sélectionnez-les toutes en une seule fois dans la boîte de dialogue d’upload.<br>
-          Tous les champs sont optionnels sauf le contact ou l’email, pour qu’on puisse vous joindre !</small><br>
+          <small>Tous les champs sont optionnels sauf le contact ou l’email, pour qu’on puisse vous joindre !</small><br>
           <input type="hidden" name="lat" value="`+e.latlng.lat+`">
           <input type="hidden" name="lng" value="`+e.latlng.lng+`">
           <button type="submit">Publier</button>
@@ -172,7 +185,6 @@
           "Statut": "Publiée"
         };
 
-        // Si ni contact ni email, on refuse la soumission
         if (!(form.contact.value || form.adresseEmail.value)) {
           alert("Veuillez renseigner au moins un moyen de contact (email ou téléphone).");
           return false;
