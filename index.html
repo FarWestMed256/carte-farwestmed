@@ -35,14 +35,16 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const API_URL = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643";
+    const API_OFFRES = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643";
+    const API_CANDIDATURES = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643?tab=Candidatures";
 
     function showLightbox(url) {
       basicLightbox.create(`<img src="${url}" style="max-width:90vw;max-height:90vh;">`).show();
     }
     window.showLightbox = showLightbox;
 
-    function openPostulerForm(email, contact, marker) {
+    // Formulaire de candidature (postuler)
+    function openPostulerForm(email, contact, marker, offreTitle) {
       var popupForm = `
         <b>Postuler à cette offre</b><br>
         Votre nom :<br><input type="text" id="candidatNom"><br>
@@ -58,14 +60,41 @@
           marker.closePopup();
         };
         document.getElementById('sendCandidature').onclick = function() {
-          alert("Merci pour votre candidature ! (Le mail sera envoyé automatiquement lors de la prochaine étape)");
-          marker.closePopup();
+          var nom = document.getElementById('candidatNom').value || "";
+          var emailCand = document.getElementById('candidatEmail').value || "";
+          var msg = document.getElementById('candidatMsg').value || "";
+          var now = new Date();
+          var dateStr = now.toISOString().slice(0, 19).replace('T', ' ');
+
+          var data = {
+            "Nom offre": offreTitle || "",
+            "Nom du candidat": nom,
+            "Email du candidat": emailCand,
+            "Message": msg,
+            "Email employeur": email || "",
+            "Contact employeur": contact || "",
+            "Date candidature": dateStr
+          };
+
+          fetch(API_CANDIDATURES, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          })
+          .then(response => {
+            if (response.ok) {
+              alert("Votre candidature a bien été enregistrée ! L’employeur recevra votre message par email (fonctionnalité en cours de connexion).");
+              marker.closePopup();
+            } else {
+              alert("Erreur lors de la candidature.");
+            }
+          });
         };
       }, 200);
     }
 
     function chargerOffres() {
-      fetch(API_URL)
+      fetch(API_OFFRES)
         .then(resp => resp.json())
         .then(data => {
           data.forEach(function(offre) {
@@ -96,7 +125,7 @@
               var btn = document.querySelector(".btn-postuler");
               if(btn) {
                 btn.onclick = function() {
-                  openPostulerForm(btn.getAttribute("data-email"), btn.getAttribute("data-contact"), marker);
+                  openPostulerForm(btn.getAttribute("data-email"), btn.getAttribute("data-contact"), marker, offre["Titre de l’offre"] || "");
                 }
               }
             });
@@ -190,7 +219,7 @@
           return false;
         }
 
-        fetch(API_URL, {
+        fetch(API_OFFRES, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
