@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
   <style>
     #map { height: 90vh; width: 100vw; }
     body { margin:0; }
@@ -59,9 +60,10 @@
           Nom de la structure :<br><input type="text" name="structure" required><br>
           Adresse :<br><input type="text" name="adresse"><br>
           Description :<br><textarea name="description"></textarea><br>
-          Photos (URL) :<br>
-          <input type="url" name="photos" placeholder="Collez ici le lien direct de la photo"><br>
-          <small>Astuce : uploadez votre photo sur <a href="https://imgur.com/upload" target="_blank">imgur.com/upload</a> puis collez le lien ici.</small><br>
+          Photo :<br>
+          <input type="url" id="photoURL" name="photos" placeholder="Lien photo..." readonly style="width:85%;"> 
+          <button type="button" id="cloudinaryBtn">Uploader une photo</button><br>
+          <small>Formats acceptés : jpg, png, webp. (Max 10Mo)</small><br>
           Contact :<br><input type="text" name="contact" required><br>
           <input type="hidden" name="lat" value="`+e.latlng.lat+`">
           <input type="hidden" name="lng" value="`+e.latlng.lng+`">
@@ -72,6 +74,33 @@
         .setLatLng(e.latlng)
         .setContent(popupContent)
         .openOn(map);
+
+      // Code Cloudinary widget
+      setTimeout(function() {
+        var cloudName = 'damqxu7t'; // Ton cloud name Cloudinary
+        var uploadBtn = document.getElementById('cloudinaryBtn');
+        if (uploadBtn) {
+          uploadBtn.onclick = function() {
+            cloudinary.openUploadWidget(
+              {
+                cloudName: cloudName,
+                uploadPreset: 'unsigned_preset',
+                sources: ['local', 'url', 'camera'],
+                multiple: false,
+                folder: 'offres-farwestmed',
+                cropping: false,
+                resourceType: 'image',
+                maxFileSize: 10485760 // 10MB
+              },
+              function(error, result) {
+                if (!error && result && result.event === "success") {
+                  document.getElementById('photoURL').value = result.info.secure_url;
+                }
+              }
+            );
+          }
+        }
+      }, 400);
 
       document.getElementById('offreForm').onsubmit = function(ev){
         ev.preventDefault();
