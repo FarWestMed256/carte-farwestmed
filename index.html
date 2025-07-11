@@ -5,10 +5,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- Lightbox pour afficher les images en grand -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.css">
   <script src="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.js"></script>
-  <!-- Widget Cloudinary -->
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
   <style>
     #map { height: 90vh; width: 100vw; }
@@ -22,26 +20,27 @@
   <script>
     const API_URL = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643";
 
-    // Fonction lightbox (agrandir la photo)
+    // Lightbox (scope global)
     function showLightbox(url) {
       basicLightbox.create(`<img src="${url}" style="max-width:90vw;max-height:90vh;">`).show();
     }
+    window.showLightbox = showLightbox;
 
+    // Affiche les offres (multi-photo + lightbox)
     function chargerOffres() {
       fetch(API_URL)
         .then(resp => resp.json())
         .then(data => {
           data.forEach(function(offre) {
             if (!offre.Latitude || !offre.Longitude) return;
-            // Galerie multi-photos
             let gallery = "";
             if (offre["Photos"]) {
               let urls = offre["Photos"].split(",");
               gallery = '<div class="photo-gallery">' +
-                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="showLightbox('${u.trim()}')">` : "").join("") +
+                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="window.showLightbox('${u.trim()}')">` : "").join("") +
                 '</div>';
             }
-            var marker = L.marker([offre.Latitude, offre.Longitude])
+            L.marker([offre.Latitude, offre.Longitude])
               .addTo(map)
               .bindPopup(
                 `<b>${offre["Titre de l’offre"] || ''}</b><br>
@@ -73,7 +72,7 @@
           Photos :<br>
           <input type="text" id="photoURL" name="photos" placeholder="Lien(s) photo..." readonly style="width:70%;"> 
           <button type="button" id="cloudinaryBtn">Uploader des photos</button><br>
-          <small>Vous pouvez sélectionner plusieurs photos à la fois dans la boîte de dialogue d’upload.</small><br>
+          <small>Pour plusieurs photos, sélectionnez-les toutes en une seule fois dans la fenêtre d’upload. Pour ajouter plus tard, refaites “Uploader des photos” : toutes les images s’ajoutent au champ !</small><br>
           Contact :<br><input type="text" name="contact" required><br>
           <input type="hidden" name="lat" value="`+e.latlng.lat+`">
           <input type="hidden" name="lng" value="`+e.latlng.lng+`">
@@ -85,7 +84,7 @@
         .setContent(popupContent)
         .openOn(map);
 
-      // Cloudinary multi-upload
+      // Cloudinary multi-upload avec ajout incrémental
       setTimeout(function() {
         var cloudName = 'damdqxu7t';
         var uploadBtn = document.getElementById('cloudinaryBtn');
@@ -105,12 +104,13 @@
               },
               function(error, result) {
                 if (!error && result && result.event === "success") {
+                  let urls = urlField.value ? urlField.value.split(",") : [];
                   if (result.info.files && Array.isArray(result.info.files)) {
-                    let allUrls = result.info.files.map(f => f.uploadInfo.secure_url);
-                    urlField.value = allUrls.join(",");
+                    urls = urls.concat(result.info.files.map(f => f.uploadInfo.secure_url));
                   } else if (result.info.secure_url) {
-                    urlField.value = result.info.secure_url;
+                    urls.push(result.info.secure_url);
                   }
+                  urlField.value = urls.join(",");
                 }
               }
             );
@@ -145,7 +145,7 @@
             if (form.photos.value) {
               let urls = form.photos.value.split(",");
               gallery = '<div class="photo-gallery">' +
-                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="showLightbox('${u.trim()}')">` : "").join("") +
+                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="window.showLightbox('${u.trim()}')">` : "").join("") +
                 '</div>';
             }
             L.marker([form.lat.value, form.lng.value])
