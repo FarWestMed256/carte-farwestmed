@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- Ajout du widget Cloudinary -->
+  <!-- Widget Cloudinary -->
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
   <style>
     #map { height: 90vh; width: 100vw; }
@@ -76,7 +76,7 @@
         .setContent(popupContent)
         .openOn(map);
 
-      // Intégration du widget Cloudinary
+      // Intégration du widget Cloudinary avec le nouveau preset
       setTimeout(function() {
         var cloudName = 'damqxu7t'; // Ton cloud name Cloudinary
         var uploadBtn = document.getElementById('cloudinaryBtn');
@@ -85,7 +85,7 @@
             cloudinary.openUploadWidget(
               {
                 cloudName: cloudName,
-                uploadPreset: 'unsigned_preset',
+                uploadPreset: 'fwmed_unsigned',
                 sources: ['local', 'url', 'camera'],
                 multiple: false,
                 folder: 'offres-farwestmed',
