@@ -1,1 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Carte FarwestMed</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 90vh; width: 100vw; }
+    body { margin:0; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const API_URL = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643"; // <= Mets ton URL ici
 
+    // Fonction pour charger toutes les offres existantes
+    function chargerOffres() {
+      fetch(API_URL)
+        .then(resp => resp.json())
+        .then(data => {
+          data.forEach(function(offre) {
+            // Ignore si pas de coordonnées valides
+            if (!offre.Latitude || !offre.Longitude) return;
+            var marker = L.marker([offre.Latitude, offre.Longitude])
+              .addTo(map)
+              .bindPopup(
+                `<b>${offre["Titre de l’offre"] || ''}</b><br>
+                ${offre["Nom de la struct"] || ''}<br>
+                ${offre["Type de poste"] || ''}<br>
+                ${offre["Description"] || ''}<br>
+                <b>Contact :</b> ${offre["Contact"] || ''}`
+              );
+          });
+        });
+    }
+
+    // Création de la carte centrée sur la France
+    var map = L.map('map').setView([46.7, 2.5], 6);
+
+    // Ajout de la couche OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Charger toutes les offres déjà présentes
+    chargerOffres();
+
+    // Ajout du clic pour placer une nouvelle offre
+    map.on('click', function(e) {
+      var popupContent = `
+        <form id="offreForm">
+          <b>Ajouter une offre</b><br>
+          Titre de l’offre :<br><input type="text" name="titre" required><br>
+          Nom de la structure :<br><input type="text" name="structure" required><br>
+          Adresse :<br><input type="text" name="adresse"><br>
+          Type de poste :<br><input type="text" name="poste" required><br>
+          Description :<br><textarea name="description"></textarea><br>
+          Contact :<br><input type="text" name="contact" required><br>
+          <input type="hidden" name="lat" value="`+e.latlng.lat+`">
+          <input type="hidden" name="lng" value="`+e.latlng.lng+`">
+          <button type="submit">Publier</button>
+        </form>
+      `;
+      var popup = L.popup()
+        .setLatLng(e.latlng)
+        .setContent(popupContent)
+        .openOn(map);
+
+      document.getElementById('offreForm').onsubmit = function(ev){
+        ev.preventDefault();
+        var form = ev.target;
+
+        // Prépare les données à envoyer à Sheet.best
+        var data = {
+          "Titre de l’offre": form.titre.value,
+          "Nom de la struct": form.structure.value,
+          "Adresse": form.adresse.value,
+          "Latitude": form.lat.value,
+          "Longitude": form.lng.value,
+          "Type de poste": form.poste.value,
+          "Description": form.description.value,
+          "Contact": form.contact.value,
+          "Statut": "Publiée"
+        };
+
+        fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        })
+        .then(response => {
+          if (response.ok) {
+            // Ajoute le marker tout de suite en local
+            L.marker([form.lat.value, form.lng.value])
+              .addTo(map)
+              .bindPopup(
+                `<b>${form.titre.value}</b><br>
+                ${form.structure.value}<br>
+                ${form.poste.value}<br>
+                ${form.description.value}<br>
+                <b>Contact :</b> ${form.contact.value}`
+              );
+            map.closePopup();
+            alert("Offre ajoutée !");
+          } else {
+            alert("Erreur lors de l'ajout de l'offre");
+          }
+        });
+      };
+    });
+  </script>
+</body>
+</html>
