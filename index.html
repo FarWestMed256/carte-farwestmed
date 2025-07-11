@@ -64,7 +64,7 @@
           Photos :<br>
           <input type="text" id="photoURL" name="photos" placeholder="Lien(s) photo..." readonly style="width:70%;"> 
           <button type="button" id="cloudinaryBtn">Uploader des photos</button><br>
-          <small>Vous pouvez ajouter plusieurs photos à la fois.<br>Formats : jpg, png, webp. (Max 10Mo/fichier)</small><br>
+          <small>Vous pouvez sélectionner plusieurs photos à la fois dans la boîte de dialogue d’upload.</small><br>
           Contact :<br><input type="text" name="contact" required><br>
           <input type="hidden" name="lat" value="`+e.latlng.lat+`">
           <input type="hidden" name="lng" value="`+e.latlng.lng+`">
@@ -76,6 +76,7 @@
         .setContent(popupContent)
         .openOn(map);
 
+      // Cloudinary multi-upload
       setTimeout(function() {
         var cloudName = 'damdqxu7t';
         var uploadBtn = document.getElementById('cloudinaryBtn');
@@ -87,7 +88,7 @@
                 cloudName: cloudName,
                 uploadPreset: 'fwmed_unsigned',
                 sources: ['local', 'url', 'camera'],
-                multiple: true, // <= Multi-upload
+                multiple: true,
                 folder: 'offres-farwestmed',
                 cropping: false,
                 resourceType: 'image',
@@ -95,13 +96,12 @@
               },
               function(error, result) {
                 if (!error && result && result.event === "success") {
-                  // Plusieurs fichiers ajoutés, concatène les liens
-                  let urls = [];
-                  if (urlField.value.trim()) {
-                    urls = urlField.value.split(",");
+                  if (result.info.files && Array.isArray(result.info.files)) {
+                    let allUrls = result.info.files.map(f => f.uploadInfo.secure_url);
+                    urlField.value = allUrls.join(",");
+                  } else if (result.info.secure_url) {
+                    urlField.value = result.info.secure_url;
                   }
-                  urls.push(result.info.secure_url);
-                  urlField.value = urls.join(",");
                 }
               }
             );
@@ -119,7 +119,7 @@
           "Latitude": form.lat.value,
           "Longitude": form.lng.value,
           "Description": form.description.value,
-          "Photos": form.photos.value, // plusieurs liens séparés par ,
+          "Photos": form.photos.value,
           "Contact": form.contact.value,
           "Statut": "Publiée"
         };
