@@ -14,7 +14,7 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const API_URL = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643"; // <= Mets ton URL ici
+    const API_URL = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643";
 
     // Fonction pour charger toutes les offres existantes
     function chargerOffres() {
@@ -22,7 +22,6 @@
         .then(resp => resp.json())
         .then(data => {
           data.forEach(function(offre) {
-            // Ignore si pas de coordonnées valides
             if (!offre.Latitude || !offre.Longitude) return;
             var marker = L.marker([offre.Latitude, offre.Longitude])
               .addTo(map)
@@ -74,7 +73,6 @@
         ev.preventDefault();
         var form = ev.target;
 
-        // Prépare les données à envoyer à Sheet.best
         var data = {
           "Titre de l’offre": form.titre.value,
           "Nom de la struct": form.structure.value,
@@ -94,7 +92,6 @@
         })
         .then(response => {
           if (response.ok) {
-            // Ajoute le marker tout de suite en local
             L.marker([form.lat.value, form.lng.value])
               .addTo(map)
               .bindPopup(
