@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Carte FarwestMed - Démo</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 90vh; width: 100vw; }
+    body { margin:0; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // 1. Création de la carte centrée sur la France
+    var map = L.map('map').setView([46.7, 2.5], 6);
+
+    // 2. Ajout de la couche OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // 3. Ajout du clic pour placer une offre
+    map.on('click', function(e) {
+      var popupContent = `
+        <form id="offreForm">
+          <b>Ajouter une offre</b><br>
+          Titre de l’offre :<br><input type="text" name="titre" required><br>
+          Structure :<br><input type="text" name="structure" required><br>
+          Type de poste :<br><input type="text" name="poste" required><br>
+          Description :<br><textarea name="description"></textarea><br>
+          Contact :<br><input type="text" name="contact" required><br>
+          <input type="hidden" name="lat" value="`+e.latlng.lat+`">
+          <input type="hidden" name="lng" value="`+e.latlng.lng+`">
+          <button type="submit">Publier</button>
+        </form>
+      `;
+      var popup = L.popup()
+        .setLatLng(e.latlng)
+        .setContent(popupContent)
+        .openOn(map);
+
+      document.getElementById('offreForm').onsubmit = function(ev){
+        ev.preventDefault();
+        var form = ev.target;
+        var marker = L.marker([form.lat.value, form.lng.value])
+          .addTo(map)
+          .bindPopup(
+            `<b>${form.titre.value}</b><br>
+            ${form.structure.value}<br>
+            ${form.poste.value}<br>
+            ${form.description.value}<br>
+            <b>Contact :</b> ${form.contact.value}`
+          );
+        map.closePopup();
+      };
+    });
+  </script>
+</body>
+</html>
