@@ -20,13 +20,35 @@
   <script>
     const API_URL = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643";
 
-    // Lightbox (scope global)
     function showLightbox(url) {
       basicLightbox.create(`<img src="${url}" style="max-width:90vw;max-height:90vh;">`).show();
     }
     window.showLightbox = showLightbox;
 
-    // Affiche les offres (multi-photo + lightbox)
+    // Formulaire de candidature (postuler)
+    function openPostulerForm(email, contact, marker) {
+      var popupForm = `
+        <b>Postuler à cette offre</b><br>
+        Votre nom :<br><input type="text" id="candidatNom"><br>
+        Votre email :<br><input type="email" id="candidatEmail"><br>
+        Message :<br><textarea id="candidatMsg"></textarea><br>
+        <button type="button" id="sendCandidature">Envoyer</button>
+        <button type="button" id="cancelCandidature">Annuler</button>
+      `;
+      marker.setPopupContent(popupForm);
+
+      setTimeout(function() {
+        document.getElementById('cancelCandidature').onclick = function() {
+          marker.closePopup();
+        };
+        document.getElementById('sendCandidature').onclick = function() {
+          // Ici, tu ajouteras la logique d'email automatique à la prochaine étape
+          alert("Merci pour votre candidature ! (Le mail sera envoyé automatiquement lors de la prochaine étape)");
+          marker.closePopup();
+        };
+      }, 200);
+    }
+
     function chargerOffres() {
       fetch(API_URL)
         .then(resp => resp.json())
@@ -40,16 +62,30 @@
                 urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="window.showLightbox('${u.trim()}')">` : "").join("") +
                 '</div>';
             }
-            L.marker([offre.Latitude, offre.Longitude])
-              .addTo(map)
-              .bindPopup(
-                `<b>${offre["Titre de l’offre"] || ''}</b><br>
-                ${offre["Nom de la struct"] || ''}<br>
-                ${offre["Adresse"] || ''}<br>
-                ${offre["Description"] || ''}<br>
-                ${gallery}
-                <b>Contact :</b> ${offre["Contact"] || ''}`
-              );
+            // Contenu de la popup de l'offre
+            var popupHtml =
+              `<b>${offre["Titre de l’offre"] || ''}</b><br>
+              ${offre["Nom de la struct"] || ''}<br>
+              ${offre["Adresse"] || ''}<br>
+              ${offre["Description"] || ''}<br>
+              ${gallery}
+              <b>Contact :</b> ${offre["Contact"] || ''}<br>
+              ${offre["Adresse Email"] ? `<b>Email :</b> ${offre["Adresse Email"]}<br>` : ""}
+              <button type="button" class="btn-postuler" 
+                data-email="${offre["Adresse Email"] || ''}" 
+                data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
+              `;
+
+            var marker = L.marker([offre.Latitude, offre.Longitude]).addTo(map).bindPopup(popupHtml);
+
+            marker.on("popupopen", function() {
+              var btn = document.querySelector(".btn-postuler");
+              if(btn) {
+                btn.onclick = function() {
+                  openPostulerForm(btn.getAttribute("data-email"), btn.getAttribute("data-contact"), marker);
+                }
+              }
+            });
           });
         });
     }
@@ -65,15 +101,18 @@
       var popupContent = `
         <form id="offreForm">
           <b>Ajouter une offre</b><br>
-          Titre de l’offre :<br><input type="text" name="titre" required><br>
-          Nom de la structure :<br><input type="text" name="structure" required><br>
+          Titre de l’offre :<br><input type="text" name="titre"><br>
+          Nom de la structure :<br><input type="text" name="structure"><br>
           Adresse :<br><input type="text" name="adresse"><br>
           Description :<br><textarea name="description"></textarea><br>
+          Adresse Email (pour recevoir une notification) :<br>
+          <input type="email" name="adresseEmail"><br>
+          Contact :<br><input type="text" name="contact"><br>
           Photos :<br>
           <input type="text" id="photoURL" name="photos" placeholder="Lien(s) photo..." readonly style="width:70%;"> 
           <button type="button" id="cloudinaryBtn">Uploader des photos</button><br>
-          <small>Pour plusieurs photos, sélectionnez-les toutes en une seule fois dans la fenêtre d’upload. Pour ajouter plus tard, refaites “Uploader des photos” : toutes les images s’ajoutent au champ !</small><br>
-          Contact :<br><input type="text" name="contact" required><br>
+          <small>Pour plusieurs photos, sélectionnez-les toutes en une seule fois dans la boîte de dialogue d’upload.<br>
+          Tous les champs sont optionnels sauf le contact ou l’email, pour qu’on puisse vous joindre !</small><br>
           <input type="hidden" name="lat" value="`+e.latlng.lat+`">
           <input type="hidden" name="lng" value="`+e.latlng.lng+`">
           <button type="submit">Publier</button>
@@ -84,7 +123,6 @@
         .setContent(popupContent)
         .openOn(map);
 
-      // Cloudinary multi-upload avec ajout incrémental
       setTimeout(function() {
         var cloudName = 'damdqxu7t';
         var uploadBtn = document.getElementById('cloudinaryBtn');
@@ -128,10 +166,17 @@
           "Latitude": form.lat.value,
           "Longitude": form.lng.value,
           "Description": form.description.value,
-          "Photos": form.photos.value,
+          "Adresse Email": form.adresseEmail.value,
           "Contact": form.contact.value,
+          "Photos": form.photos.value,
           "Statut": "Publiée"
         };
+
+        // Si ni contact ni email, on refuse la soumission
+        if (!(form.contact.value || form.adresseEmail.value)) {
+          alert("Veuillez renseigner au moins un moyen de contact (email ou téléphone).");
+          return false;
+        }
 
         fetch(API_URL, {
           method: "POST",
@@ -140,7 +185,6 @@
         })
         .then(response => {
           if (response.ok) {
-            // Affichage immédiat du marker et galerie
             let gallery = "";
             if (form.photos.value) {
               let urls = form.photos.value.split(",");
@@ -156,7 +200,10 @@
                 ${form.adresse.value}<br>
                 ${form.description.value}<br>
                 ${gallery}
-                <b>Contact :</b> ${form.contact.value}`
+                <b>Contact :</b> ${form.contact.value}<br>
+                ${form.adresseEmail.value ? `<b>Email :</b> ${form.adresseEmail.value}<br>` : ""}
+                <button type="button" class="btn-postuler" data-email="${form.adresseEmail.value}" data-contact="${form.contact.value}">Postuler à cette offre</button>
+                `
               );
             map.closePopup();
             alert("Offre ajoutée !");
