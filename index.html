@@ -23,13 +23,15 @@
         .then(data => {
           data.forEach(function(offre) {
             if (!offre.Latitude || !offre.Longitude) return;
+            var photoHTML = offre["Photos"] ? `<img src="${offre["Photos"]}" style="max-width:150px;max-height:100px;display:block;margin:5px 0;">` : "";
             var marker = L.marker([offre.Latitude, offre.Longitude])
               .addTo(map)
               .bindPopup(
                 `<b>${offre["Titre de l’offre"] || ''}</b><br>
                 ${offre["Nom de la struct"] || ''}<br>
-                ${offre["Type de poste"] || ''}<br>
+                ${offre["Adresse"] || ''}<br>
                 ${offre["Description"] || ''}<br>
+                ${photoHTML}
                 <b>Contact :</b> ${offre["Contact"] || ''}`
               );
           });
@@ -56,8 +58,10 @@
           Titre de l’offre :<br><input type="text" name="titre" required><br>
           Nom de la structure :<br><input type="text" name="structure" required><br>
           Adresse :<br><input type="text" name="adresse"><br>
-          Type de poste :<br><input type="text" name="poste" required><br>
           Description :<br><textarea name="description"></textarea><br>
+          Photos (URL) :<br>
+          <input type="url" name="photos" placeholder="Collez ici le lien direct de la photo"><br>
+          <small>Astuce : uploadez votre photo sur <a href="https://imgur.com/upload" target="_blank">imgur.com/upload</a> puis collez le lien ici.</small><br>
           Contact :<br><input type="text" name="contact" required><br>
           <input type="hidden" name="lat" value="`+e.latlng.lat+`">
           <input type="hidden" name="lng" value="`+e.latlng.lng+`">
@@ -79,8 +83,8 @@
           "Adresse": form.adresse.value,
           "Latitude": form.lat.value,
           "Longitude": form.lng.value,
-          "Type de poste": form.poste.value,
           "Description": form.description.value,
+          "Photos": form.photos.value,
           "Contact": form.contact.value,
           "Statut": "Publiée"
         };
@@ -92,13 +96,15 @@
         })
         .then(response => {
           if (response.ok) {
+            var photoHTML = form.photos.value ? `<img src="${form.photos.value}" style="max-width:150px;max-height:100px;display:block;margin:5px 0;">` : "";
             L.marker([form.lat.value, form.lng.value])
               .addTo(map)
               .bindPopup(
                 `<b>${form.titre.value}</b><br>
                 ${form.structure.value}<br>
-                ${form.poste.value}<br>
+                ${form.adresse.value}<br>
                 ${form.description.value}<br>
+                ${photoHTML}
                 <b>Contact :</b> ${form.contact.value}`
               );
             map.closePopup();
