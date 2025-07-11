@@ -5,11 +5,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- Lightbox pour afficher les images en grand -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.js"></script>
+  <!-- Widget Cloudinary -->
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
   <style>
     #map { height: 90vh; width: 100vw; }
     body { margin:0; }
-    .photo-gallery img {max-width:140px;max-height:100px;margin:3px;border-radius:8px;}
+    .photo-gallery img {max-width:140px;max-height:100px;margin:3px;border-radius:8px; cursor:pointer;}
   </style>
 </head>
 <body>
@@ -18,18 +22,23 @@
   <script>
     const API_URL = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643";
 
+    // Fonction lightbox (agrandir la photo)
+    function showLightbox(url) {
+      basicLightbox.create(`<img src="${url}" style="max-width:90vw;max-height:90vh;">`).show();
+    }
+
     function chargerOffres() {
       fetch(API_URL)
         .then(resp => resp.json())
         .then(data => {
           data.forEach(function(offre) {
             if (!offre.Latitude || !offre.Longitude) return;
-            // Gestion multi-photos (séparées par une virgule)
+            // Galerie multi-photos
             let gallery = "";
             if (offre["Photos"]) {
               let urls = offre["Photos"].split(",");
               gallery = '<div class="photo-gallery">' +
-                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo">` : "").join("") +
+                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="showLightbox('${u.trim()}')">` : "").join("") +
                 '</div>';
             }
             var marker = L.marker([offre.Latitude, offre.Longitude])
@@ -136,7 +145,7 @@
             if (form.photos.value) {
               let urls = form.photos.value.split(",");
               gallery = '<div class="photo-gallery">' +
-                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo">` : "").join("") +
+                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="showLightbox('${u.trim()}')">` : "").join("") +
                 '</div>';
             }
             L.marker([form.lat.value, form.lng.value])
