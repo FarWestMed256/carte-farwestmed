@@ -5,11 +5,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- Widget Cloudinary -->
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
   <style>
     #map { height: 90vh; width: 100vw; }
     body { margin:0; }
+    .photo-gallery img {max-width:140px;max-height:100px;margin:3px;border-radius:8px;}
   </style>
 </head>
 <body>
@@ -18,14 +18,20 @@
   <script>
     const API_URL = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643";
 
-    // Fonction pour charger toutes les offres existantes
     function chargerOffres() {
       fetch(API_URL)
         .then(resp => resp.json())
         .then(data => {
           data.forEach(function(offre) {
             if (!offre.Latitude || !offre.Longitude) return;
-            var photoHTML = offre["Photos"] ? `<img src="${offre["Photos"]}" style="max-width:150px;max-height:100px;display:block;margin:5px 0;">` : "";
+            // Gestion multi-photos (séparées par une virgule)
+            let gallery = "";
+            if (offre["Photos"]) {
+              let urls = offre["Photos"].split(",");
+              gallery = '<div class="photo-gallery">' +
+                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo">` : "").join("") +
+                '</div>';
+            }
             var marker = L.marker([offre.Latitude, offre.Longitude])
               .addTo(map)
               .bindPopup(
@@ -33,26 +39,20 @@
                 ${offre["Nom de la struct"] || ''}<br>
                 ${offre["Adresse"] || ''}<br>
                 ${offre["Description"] || ''}<br>
-                ${photoHTML}
+                ${gallery}
                 <b>Contact :</b> ${offre["Contact"] || ''}`
               );
           });
         });
     }
 
-    // Création de la carte centrée sur la France
     var map = L.map('map').setView([46.7, 2.5], 6);
-
-    // Ajout de la couche OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
-
-    // Charger toutes les offres déjà présentes
     chargerOffres();
 
-    // Ajout du clic pour placer une nouvelle offre
     map.on('click', function(e) {
       var popupContent = `
         <form id="offreForm">
@@ -61,10 +61,10 @@
           Nom de la structure :<br><input type="text" name="structure" required><br>
           Adresse :<br><input type="text" name="adresse"><br>
           Description :<br><textarea name="description"></textarea><br>
-          Photo :<br>
-          <input type="url" id="photoURL" name="photos" placeholder="Lien photo..." readonly style="width:85%;"> 
-          <button type="button" id="cloudinaryBtn">Uploader une photo</button><br>
-          <small>Formats acceptés : jpg, png, webp. (Max 10Mo)</small><br>
+          Photos :<br>
+          <input type="text" id="photoURL" name="photos" placeholder="Lien(s) photo..." readonly style="width:70%;"> 
+          <button type="button" id="cloudinaryBtn">Uploader des photos</button><br>
+          <small>Vous pouvez ajouter plusieurs photos à la fois.<br>Formats : jpg, png, webp. (Max 10Mo/fichier)</small><br>
           Contact :<br><input type="text" name="contact" required><br>
           <input type="hidden" name="lat" value="`+e.latlng.lat+`">
           <input type="hidden" name="lng" value="`+e.latlng.lng+`">
@@ -76,10 +76,10 @@
         .setContent(popupContent)
         .openOn(map);
 
-      // Intégration du widget Cloudinary avec le bon cloudName
       setTimeout(function() {
-        var cloudName = 'damdqxu7t'; // cloudName Cloudinary exact
+        var cloudName = 'damdqxu7t';
         var uploadBtn = document.getElementById('cloudinaryBtn');
+        var urlField = document.getElementById('photoURL');
         if (uploadBtn) {
           uploadBtn.onclick = function() {
             cloudinary.openUploadWidget(
@@ -87,7 +87,7 @@
                 cloudName: cloudName,
                 uploadPreset: 'fwmed_unsigned',
                 sources: ['local', 'url', 'camera'],
-                multiple: false,
+                multiple: true, // <= Multi-upload
                 folder: 'offres-farwestmed',
                 cropping: false,
                 resourceType: 'image',
@@ -95,7 +95,13 @@
               },
               function(error, result) {
                 if (!error && result && result.event === "success") {
-                  document.getElementById('photoURL').value = result.info.secure_url;
+                  // Plusieurs fichiers ajoutés, concatène les liens
+                  let urls = [];
+                  if (urlField.value.trim()) {
+                    urls = urlField.value.split(",");
+                  }
+                  urls.push(result.info.secure_url);
+                  urlField.value = urls.join(",");
                 }
               }
             );
@@ -106,7 +112,6 @@
       document.getElementById('offreForm').onsubmit = function(ev){
         ev.preventDefault();
         var form = ev.target;
-
         var data = {
           "Titre de l’offre": form.titre.value,
           "Nom de la struct": form.structure.value,
@@ -114,7 +119,7 @@
           "Latitude": form.lat.value,
           "Longitude": form.lng.value,
           "Description": form.description.value,
-          "Photos": form.photos.value,
+          "Photos": form.photos.value, // plusieurs liens séparés par ,
           "Contact": form.contact.value,
           "Statut": "Publiée"
         };
@@ -126,7 +131,14 @@
         })
         .then(response => {
           if (response.ok) {
-            var photoHTML = form.photos.value ? `<img src="${form.photos.value}" style="max-width:150px;max-height:100px;display:block;margin:5px 0;">` : "";
+            // Affichage immédiat du marker et galerie
+            let gallery = "";
+            if (form.photos.value) {
+              let urls = form.photos.value.split(",");
+              gallery = '<div class="photo-gallery">' +
+                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo">` : "").join("") +
+                '</div>';
+            }
             L.marker([form.lat.value, form.lng.value])
               .addTo(map)
               .bindPopup(
@@ -134,7 +146,7 @@
                 ${form.structure.value}<br>
                 ${form.adresse.value}<br>
                 ${form.description.value}<br>
-                ${photoHTML}
+                ${gallery}
                 <b>Contact :</b> ${form.contact.value}`
               );
             map.closePopup();
