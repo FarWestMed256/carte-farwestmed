@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.css">
   <script src="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.js"></script>
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+  <!-- AJOUT : Leaflet Control Geocoder -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   <style>
     #map { height: 90vh; width: 100vw; }
     body { margin:0; }
@@ -116,6 +119,13 @@
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
+
+    // AJOUT : Barre de recherche (geocoder)
+    L.Control.geocoder({
+      defaultMarkGeocode: true,
+      placeholder: "Rechercher une ville ou une adresse..."
+    }).addTo(map);
+
     chargerOffres();
 
     map.on('click', function(e) {
