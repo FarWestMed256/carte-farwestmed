@@ -35,26 +35,26 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+    // URLs d'API Sheet.best pour chaque sheet
     const API_OFFRES = "https://api.sheetbest.com/sheets/c6bdfcfd-13c2-4f7e-8b26-4fd3f0be5068";
     const API_CANDIDATURES = "https://api.sheetbest.com/sheets/fea9ad93-6045-46ef-af9d-9ed93a9f5a4c";
 
     function showLightbox(url) {
-      basicLightbox.create(`<img src="${url}" style="max-width:90vw;max-height:90vh;">`).show();
+      basicLightbox.create('<img src="' + url + '" style="max-width:90vw;max-height:90vh;">').show();
     }
     window.showLightbox = showLightbox;
 
     function openPostulerForm(email, contact, marker, offreTitle) {
       setTimeout(function() {
-        var popupForm = `
-          <b>Postuler à cette offre</b><br>
-          Votre nom :<br><input type="text" id="candidatNom"><br>
-          Votre email :<br><input type="email" id="candidatEmail"><br>
-          Message :<br><textarea id="candidatMsg"></textarea><br>
-          <button type="button" id="sendCandidature"
-            style="background:#f9d875;color:#4b3c10;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:6px;"
-            data-email="${email || ''}" data-contact="${contact || ''}" data-offretitle="${offreTitle || ''}">Envoyer</button>
-          <button type="button" id="cancelCandidature" style="margin-left:8px;">Annuler</button>
-        `;
+        var popupForm = 
+          '<b>Postuler à cette offre</b><br>'+
+          'Votre nom :<br><input type="text" id="candidatNom"><br>'+
+          'Votre email :<br><input type="email" id="candidatEmail"><br>'+
+          'Message :<br><textarea id="candidatMsg"></textarea><br>'+
+          '<button type="button" id="sendCandidature" '+
+          'style="background:#f9d875;color:#4b3c10;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:6px;" '+
+          'data-email="' + (email || '') + '" data-contact="' + (contact || '') + '" data-offretitle="' + (offreTitle || '') + '">Envoyer</button>'+
+          '<button type="button" id="cancelCandidature" style="margin-left:8px;">Annuler</button>';
         marker.setPopupContent(popupForm);
 
         setTimeout(function() {
@@ -74,7 +74,7 @@
             if (offre["Photos"]) {
               let urls = offre["Photos"].split(",");
               gallery = '<div class="photo-gallery">' +
-                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="window.showLightbox('${u.trim()}')">` : "").join("") +
+                urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
                 '</div>';
             }
             var postulerId = `btn-postuler-${idx}`;
@@ -110,22 +110,7 @@
         });
     }
 
-    // Limites géographiques France métropolitaine
-    const franceBounds = [
-      [41, -5.5],    // Sud-ouest
-      [51.5, 9.5]    // Nord-est
-    ];
-
-    // Crée la carte avec restriction France métro
-    var map = L.map('map', {
-      center: [46.7, 2.5],
-      zoom: 6,
-      minZoom: 5,
-      maxZoom: 12,
-      maxBounds: franceBounds,
-      maxBoundsViscosity: 1.0 // “glisser” bloqué aux bords
-    });
-
+    var map = L.map('map').setView([46.7, 2.5], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
@@ -133,8 +118,8 @@
     chargerOffres();
 
     map.on('click', function(e) {
-      var popupContent = `
-        <form id="offreForm">
+      var popupContent = 
+        `<form id="offreForm">
           <b>Ajouter une offre</b><br>
           Titre de l’offre :<br><input type="text" name="titre"><br>
           Nom de la structure :<br><input type="text" name="structure"><br>
@@ -150,8 +135,7 @@
           <button type="button" id="cloudinaryBtn">Uploader des photos</button><br>
           <small>Tous les champs sont optionnels sauf le contact ou l’email, pour qu’on puisse vous joindre !</small><br>
           <button type="submit">Publier</button>
-        </form>
-      `;
+        </form>`;
       var popup = L.popup()
         .setLatLng(e.latlng)
         .setContent(popupContent)
@@ -222,7 +206,7 @@
             if (form.photos.value) {
               let urls = form.photos.value.split(",");
               gallery = '<div class="photo-gallery">' +
-                urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="window.showLightbox('${u.trim()}')">` : "").join("") +
+                urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
                 '</div>';
             }
             L.marker([form.lat.value, form.lng.value])
