@@ -70,6 +70,7 @@
         .then(resp => resp.json())
         .then(data => {
           data.forEach(function(offre, idx) {
+            if ((offre.Statut || "").toLowerCase() !== "publiée") return;
             if (!offre.Latitude || !offre.Longitude) return;
             let gallery = "";
             if (offre["Photos"]) {
