@@ -35,8 +35,9 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const API_OFFRES = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643";
-    const API_CANDIDATURES = "https://api.sheetbest.com/sheets/dceb24fc-eba5-4fea-b220-c882b838e643?tab=Candidatures";
+    // URLs d'API Sheet.best pour chaque sheet
+    const API_OFFRES = "https://api.sheetbest.com/sheets/c6bdfcfd-13c2-4f7e-8b26-4fd3f0be5068";
+    const API_CANDIDATURES = "https://api.sheetbest.com/sheets/fea9ad93-6045-46ef-af9d-9ed93a9f5a4c";
 
     function showLightbox(url) {
       basicLightbox.create(`<img src="${url}" style="max-width:90vw;max-height:90vh;">`).show();
@@ -124,6 +125,8 @@
           Titre de l’offre :<br><input type="text" name="titre"><br>
           Nom de la structure :<br><input type="text" name="structure"><br>
           Adresse :<br><input type="text" name="adresse"><br>
+          Latitude :<br><input type="text" name="lat" value="${e.latlng.lat}" readonly><br>
+          Longitude :<br><input type="text" name="lng" value="${e.latlng.lng}" readonly><br>
           Description :<br><textarea name="description"></textarea><br>
           Adresse Email (pour recevoir une notification) :<br>
           <input type="email" name="adresseEmail"><br>
@@ -132,8 +135,6 @@
           <input type="text" id="photoURL" name="photos" placeholder="Lien(s) photo..." readonly style="width:70%;"> 
           <button type="button" id="cloudinaryBtn">Uploader des photos</button><br>
           <small>Tous les champs sont optionnels sauf le contact ou l’email, pour qu’on puisse vous joindre !</small><br>
-          <input type="hidden" name="lat" value="`+e.latlng.lat+`">
-          <input type="hidden" name="lng" value="`+e.latlng.lng+`">
           <button type="submit">Publier</button>
         </form>
       `;
@@ -235,8 +236,8 @@
     // PATCH ULTIME : Listener global pour bouton Envoyer (candidature)
     document.body.addEventListener('click', function(e) {
       if (e.target && e.target.id === "sendCandidature") {
-        // Pour debug : affiche une alerte AVANT de faire le fetch
-        alert('TEST: JS capte le clic et fetch va suivre !');
+        if (e.target.disabled) return;
+        e.target.disabled = true;
 
         var nom = document.getElementById('candidatNom') ? document.getElementById('candidatNom').value : "";
         var emailCand = document.getElementById('candidatEmail') ? document.getElementById('candidatEmail').value : "";
@@ -274,9 +275,11 @@
           } else {
             alert("Erreur lors de la candidature.");
           }
+          e.target.disabled = false;
         })
         .catch(function() {
           alert("Erreur lors de la candidature (réseau).");
+          e.target.disabled = false;
         });
       }
     });
