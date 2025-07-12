@@ -14,7 +14,7 @@
     .photo-gallery img {max-width:140px;max-height:100px;margin:3px;border-radius:8px; cursor:pointer;}
     .btn-postuler {
       font-size: 1.1em;
-      background: #f9d875; /* jaune sable */
+      background: #f9d875;
       color: #4b3c10;
       border: none;
       padding: 8px 20px;
@@ -97,7 +97,7 @@
       fetch(API_OFFRES)
         .then(resp => resp.json())
         .then(data => {
-          data.forEach(function(offre) {
+          data.forEach(function(offre, idx) {
             if (!offre.Latitude || !offre.Longitude) return;
             let gallery = "";
             if (offre["Photos"]) {
@@ -106,6 +106,8 @@
                 urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="window.showLightbox('${u.trim()}')">` : "").join("") +
                 '</div>';
             }
+            // ID unique pour chaque bouton postuler
+            var postulerId = `btn-postuler-${idx}`;
             var popupHtml =
               `<b>${offre["Titre de l’offre"] || ''}</b><br>
               ${offre["Nom de la struct"] || ''}<br>
@@ -114,7 +116,7 @@
               ${gallery}
               <b>Contact :</b> ${offre["Contact"] || ''}<br>
               ${offre["Adresse Email"] ? `<b>Email :</b> ${offre["Adresse Email"]}<br>` : ""}
-              <button type="button" class="btn-postuler" 
+              <button type="button" class="btn-postuler" id="${postulerId}"
                 data-email="${offre["Adresse Email"] || ''}" 
                 data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
               `;
@@ -122,10 +124,15 @@
             var marker = L.marker([offre.Latitude, offre.Longitude]).addTo(map).bindPopup(popupHtml);
 
             marker.on("popupopen", function() {
-              var btn = document.querySelector(".btn-postuler");
+              var btn = document.getElementById(postulerId);
               if(btn) {
                 btn.onclick = function() {
-                  openPostulerForm(btn.getAttribute("data-email"), btn.getAttribute("data-contact"), marker, offre["Titre de l’offre"] || "");
+                  openPostulerForm(
+                    btn.getAttribute("data-email"), 
+                    btn.getAttribute("data-contact"), 
+                    marker, 
+                    offre["Titre de l’offre"] || ""
+                  );
                 }
               }
             });
