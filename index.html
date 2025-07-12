@@ -43,7 +43,7 @@
     }
     window.showLightbox = showLightbox;
 
-    // Formulaire de candidature (postuler)
+    // Formulaire de candidature (postuler) — PATCHÉ !
     function openPostulerForm(email, contact, marker, offreTitle) {
       var popupForm = `
         <b>Postuler à cette offre</b><br>
@@ -55,42 +55,49 @@
       `;
       marker.setPopupContent(popupForm);
 
+      // PATCH: Attache le listener après être sûr que le DOM est prêt
       setTimeout(function() {
-        document.getElementById('cancelCandidature').onclick = function() {
-          marker.closePopup();
-        };
-        document.getElementById('sendCandidature').onclick = function() {
-          var nom = document.getElementById('candidatNom').value || "";
-          var emailCand = document.getElementById('candidatEmail').value || "";
-          var msg = document.getElementById('candidatMsg').value || "";
-          var now = new Date();
-          var dateStr = now.toISOString().slice(0, 19).replace('T', ' ');
-
-          var data = {
-            "Nom offre": offreTitle || "",
-            "Nom du candidat": nom,
-            "Email du candidat": emailCand,
-            "Message": msg,
-            "Email employeur": email || "",
-            "Contact employeur": contact || "",
-            "Date candidature": dateStr
+        var btnCancel = document.getElementById('cancelCandidature');
+        var btnSend = document.getElementById('sendCandidature');
+        if (btnCancel) {
+          btnCancel.onclick = function() {
+            marker.closePopup();
           };
+        }
+        if (btnSend) {
+          btnSend.onclick = function() {
+            var nom = document.getElementById('candidatNom').value || "";
+            var emailCand = document.getElementById('candidatEmail').value || "";
+            var msg = document.getElementById('candidatMsg').value || "";
+            var now = new Date();
+            var dateStr = now.toISOString().slice(0, 19).replace('T', ' ');
 
-          fetch(API_CANDIDATURES, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-          })
-          .then(response => {
-            if (response.ok) {
-              alert("Votre candidature a bien été enregistrée ! L’employeur recevra votre message par email (fonctionnalité en cours de connexion).");
-              marker.closePopup();
-            } else {
-              alert("Erreur lors de la candidature.");
-            }
-          });
-        };
-      }, 200);
+            var data = {
+              "Nom offre": offreTitle || "",
+              "Nom du candidat": nom,
+              "Email du candidat": emailCand,
+              "Message": msg,
+              "Email employeur": email || "",
+              "Contact employeur": contact || "",
+              "Date candidature": dateStr
+            };
+
+            fetch(API_CANDIDATURES, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data)
+            })
+            .then(response => {
+              if (response.ok) {
+                alert("Votre candidature a bien été enregistrée ! L’employeur recevra votre message par email (fonctionnalité en cours de connexion).");
+                marker.closePopup();
+              } else {
+                alert("Erreur lors de la candidature.");
+              }
+            });
+          };
+        }
+      }, 300);
     }
 
     function chargerOffres() {
@@ -106,7 +113,6 @@
                 urls.map(u => u.trim() ? `<img src="${u.trim()}" alt="photo" onclick="window.showLightbox('${u.trim()}')">` : "").join("") +
                 '</div>';
             }
-            // ID unique pour chaque bouton postuler
             var postulerId = `btn-postuler-${idx}`;
             var popupHtml =
               `<b>${offre["Titre de l’offre"] || ''}</b><br>
