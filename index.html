@@ -8,9 +8,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.css">
   <script src="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.js"></script>
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
-  <!-- AJOUT : Leaflet Control Geocoder -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   <style>
     #map { height: 90vh; width: 100vw; }
     body { margin:0; }
@@ -38,7 +35,6 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // URLs d'API Sheet.best pour chaque sheet
     const API_OFFRES = "https://api.sheetbest.com/sheets/c6bdfcfd-13c2-4f7e-8b26-4fd3f0be5068";
     const API_CANDIDATURES = "https://api.sheetbest.com/sheets/fea9ad93-6045-46ef-af9d-9ed93a9f5a4c";
 
@@ -114,18 +110,26 @@
         });
     }
 
-    var map = L.map('map').setView([46.7, 2.5], 6);
+    // Limites géographiques France métropolitaine
+    const franceBounds = [
+      [41, -5.5],    // Sud-ouest
+      [51.5, 9.5]    // Nord-est
+    ];
+
+    // Crée la carte avec restriction France métro
+    var map = L.map('map', {
+      center: [46.7, 2.5],
+      zoom: 6,
+      minZoom: 5,
+      maxZoom: 12,
+      maxBounds: franceBounds,
+      maxBoundsViscosity: 1.0 // “glisser” bloqué aux bords
+    });
+
     L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
-
-    // AJOUT : Barre de recherche (geocoder)
-    L.Control.geocoder({
-      defaultMarkGeocode: true,
-      placeholder: "Rechercher une ville ou une adresse..."
-    }).addTo(map);
-
     chargerOffres();
 
     map.on('click', function(e) {
