@@ -43,7 +43,6 @@
     }
     window.showLightbox = showLightbox;
 
-    // PATCH ULTRA-ROBUSTE
     function openPostulerForm(email, contact, marker, offreTitle) {
       setTimeout(function() {
         var popupForm = `
@@ -61,42 +60,7 @@
         setTimeout(function() {
           var btnCancel = document.getElementById('cancelCandidature');
           if (btnCancel) btnCancel.onclick = function() { marker.closePopup(); };
-
-          var btnSend = document.getElementById('sendCandidature');
-          if (btnSend) {
-            btnSend.onclick = function() {
-              var nom = document.getElementById('candidatNom').value || "";
-              var emailCand = document.getElementById('candidatEmail').value || "";
-              var msg = document.getElementById('candidatMsg').value || "";
-              var now = new Date();
-              var dateStr = now.toISOString().slice(0, 19).replace('T', ' ');
-
-              var data = {
-                "Nom offre": btnSend.getAttribute("data-offretitle"),
-                "Nom du candidat": nom,
-                "Email du candidat": emailCand,
-                "Message": msg,
-                "Email employeur": btnSend.getAttribute("data-email") || "",
-                "Contact employeur": btnSend.getAttribute("data-contact") || "",
-                "Date candidature": dateStr
-              };
-
-              fetch(API_CANDIDATURES, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-              })
-              .then(response => {
-                if (response.ok) {
-                  alert("Votre candidature a bien été enregistrée !");
-                  marker.closePopup();
-                } else {
-                  alert("Erreur lors de la candidature.");
-                }
-              });
-            };
-          }
-        }, 120);
+        }, 100);
       }, 100);
     }
 
@@ -266,6 +230,58 @@
           }
         });
       };
+    });
+
+    // PATCH ULTIME : Listener global pour bouton Envoyer (candidature)
+    document.body.addEventListener('click', function(e) {
+      if (e.target && e.target.id === "sendCandidature") {
+        if (e.target.disabled) return;
+        e.target.disabled = true;
+
+        var nom = document.getElementById('candidatNom') ? document.getElementById('candidatNom').value : "";
+        var emailCand = document.getElementById('candidatEmail') ? document.getElementById('candidatEmail').value : "";
+        var msg = document.getElementById('candidatMsg') ? document.getElementById('candidatMsg').value : "";
+        var now = new Date();
+        var dateStr = now.toISOString().slice(0, 19).replace('T', ' ');
+
+        var titre = "";
+        var titreElem = document.querySelector(".leaflet-popup-content b");
+        if (titreElem) titre = titreElem.textContent || "";
+
+        var email = e.target.getAttribute("data-email") || "";
+        var contact = e.target.getAttribute("data-contact") || "";
+
+        var data = {
+          "Nom offre": titre,
+          "Nom du candidat": nom,
+          "Email du candidat": emailCand,
+          "Message": msg,
+          "Email employeur": email,
+          "Contact employeur": contact,
+          "Date candidature": dateStr
+        };
+
+        fetch(API_CANDIDATURES, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        })
+        .then(response => {
+          if (response.ok) {
+            alert("Votre candidature a bien été enregistrée !");
+            // Ferme la popup Leaflet
+            var closeBtn = document.querySelector('.leaflet-popup-close-button');
+            if (closeBtn) closeBtn.click();
+          } else {
+            alert("Erreur lors de la candidature.");
+          }
+          e.target.disabled = false;
+        })
+        .catch(function() {
+          alert("Erreur lors de la candidature.");
+          e.target.disabled = false;
+        });
+      }
     });
   </script>
 </body>
