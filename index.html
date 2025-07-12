@@ -220,6 +220,8 @@ L.control.layers(null, {'Communes ZIP': zipLayer}).addTo(map);
       document.getElementById('offreForm').onsubmit = function(ev){
         ev.preventDefault();
         var form = ev.target;
+        var now = new Date();
+  var datePublication = now.toISOString().slice(0, 10);
         var data = {
           "Titre de l’offre": form.titre.value,
           "Nom de la struct": form.structure.value,
@@ -230,6 +232,7 @@ L.control.layers(null, {'Communes ZIP': zipLayer}).addTo(map);
           "Adresse Email": form.adresseEmail.value,
           "Contact": form.contact.value,
           "Photos": form.photos.value,
+          "Date de publication": datePublication,
           "Statut": "Publiée"
         };
 
