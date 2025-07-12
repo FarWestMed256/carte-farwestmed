@@ -122,6 +122,7 @@ var zipLayer = L.layerGroup().addTo(map);
 
 // 2. Fonction d'import du CSV ZIP
 function importerZIP(csvFile, groupLayer) {
+  console.log('importerZIP appelée !');
   fetch(csvFile)
     .then(resp => resp.text())
     .then(csvText => {
