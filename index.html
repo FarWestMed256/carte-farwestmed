@@ -43,61 +43,61 @@
     }
     window.showLightbox = showLightbox;
 
-    // Formulaire de candidature (postuler) — PATCHÉ !
+    // PATCH ULTRA-ROBUSTE
     function openPostulerForm(email, contact, marker, offreTitle) {
-      var popupForm = `
-        <b>Postuler à cette offre</b><br>
-        Votre nom :<br><input type="text" id="candidatNom"><br>
-        Votre email :<br><input type="email" id="candidatEmail"><br>
-        Message :<br><textarea id="candidatMsg"></textarea><br>
-        <button type="button" id="sendCandidature" style="background:#f9d875;color:#4b3c10;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:6px;">Envoyer</button>
-        <button type="button" id="cancelCandidature" style="margin-left:8px;">Annuler</button>
-      `;
-      marker.setPopupContent(popupForm);
-
-      // PATCH: Attache le listener après être sûr que le DOM est prêt
       setTimeout(function() {
-        var btnCancel = document.getElementById('cancelCandidature');
-        var btnSend = document.getElementById('sendCandidature');
-        if (btnCancel) {
-          btnCancel.onclick = function() {
-            marker.closePopup();
-          };
-        }
-        if (btnSend) {
-          btnSend.onclick = function() {
-            var nom = document.getElementById('candidatNom').value || "";
-            var emailCand = document.getElementById('candidatEmail').value || "";
-            var msg = document.getElementById('candidatMsg').value || "";
-            var now = new Date();
-            var dateStr = now.toISOString().slice(0, 19).replace('T', ' ');
+        var popupForm = `
+          <b>Postuler à cette offre</b><br>
+          Votre nom :<br><input type="text" id="candidatNom"><br>
+          Votre email :<br><input type="email" id="candidatEmail"><br>
+          Message :<br><textarea id="candidatMsg"></textarea><br>
+          <button type="button" id="sendCandidature"
+            style="background:#f9d875;color:#4b3c10;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:6px;"
+            data-email="${email || ''}" data-contact="${contact || ''}" data-offretitle="${offreTitle || ''}">Envoyer</button>
+          <button type="button" id="cancelCandidature" style="margin-left:8px;">Annuler</button>
+        `;
+        marker.setPopupContent(popupForm);
 
-            var data = {
-              "Nom offre": offreTitle || "",
-              "Nom du candidat": nom,
-              "Email du candidat": emailCand,
-              "Message": msg,
-              "Email employeur": email || "",
-              "Contact employeur": contact || "",
-              "Date candidature": dateStr
+        setTimeout(function() {
+          var btnCancel = document.getElementById('cancelCandidature');
+          if (btnCancel) btnCancel.onclick = function() { marker.closePopup(); };
+
+          var btnSend = document.getElementById('sendCandidature');
+          if (btnSend) {
+            btnSend.onclick = function() {
+              var nom = document.getElementById('candidatNom').value || "";
+              var emailCand = document.getElementById('candidatEmail').value || "";
+              var msg = document.getElementById('candidatMsg').value || "";
+              var now = new Date();
+              var dateStr = now.toISOString().slice(0, 19).replace('T', ' ');
+
+              var data = {
+                "Nom offre": btnSend.getAttribute("data-offretitle"),
+                "Nom du candidat": nom,
+                "Email du candidat": emailCand,
+                "Message": msg,
+                "Email employeur": btnSend.getAttribute("data-email") || "",
+                "Contact employeur": btnSend.getAttribute("data-contact") || "",
+                "Date candidature": dateStr
+              };
+
+              fetch(API_CANDIDATURES, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+              })
+              .then(response => {
+                if (response.ok) {
+                  alert("Votre candidature a bien été enregistrée !");
+                  marker.closePopup();
+                } else {
+                  alert("Erreur lors de la candidature.");
+                }
+              });
             };
-
-            fetch(API_CANDIDATURES, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(data)
-            })
-            .then(response => {
-              if (response.ok) {
-                alert("Votre candidature a bien été enregistrée ! L’employeur recevra votre message par email (fonctionnalité en cours de connexion).");
-                marker.closePopup();
-              } else {
-                alert("Erreur lors de la candidature.");
-              }
-            });
-          };
-        }
-      }, 300);
+          }
+        }, 120);
+      }, 100);
     }
 
     function chargerOffres() {
