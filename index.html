@@ -235,8 +235,8 @@
     // PATCH ULTIME : Listener global pour bouton Envoyer (candidature)
     document.body.addEventListener('click', function(e) {
       if (e.target && e.target.id === "sendCandidature") {
-        if (e.target.disabled) return;
-        e.target.disabled = true;
+        // Pour debug : affiche une alerte AVANT de faire le fetch
+        alert('TEST: JS capte le clic et fetch va suivre !');
 
         var nom = document.getElementById('candidatNom') ? document.getElementById('candidatNom').value : "";
         var emailCand = document.getElementById('candidatEmail') ? document.getElementById('candidatEmail').value : "";
@@ -269,17 +269,14 @@
         .then(response => {
           if (response.ok) {
             alert("Votre candidature a bien été enregistrée !");
-            // Ferme la popup Leaflet
             var closeBtn = document.querySelector('.leaflet-popup-close-button');
             if (closeBtn) closeBtn.click();
           } else {
             alert("Erreur lors de la candidature.");
           }
-          e.target.disabled = false;
         })
         .catch(function() {
-          alert("Erreur lors de la candidature.");
-          e.target.disabled = false;
+          alert("Erreur lors de la candidature (réseau).");
         });
       }
     });
