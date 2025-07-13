@@ -5,6 +5,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.css">
   <script src="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.js"></script>
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
@@ -119,7 +122,7 @@
 }).addTo(map);
     chargerOffres();
 // 1. Crée le layer ZIP
-var zipLayer = L.layerGroup().addTo(map);
+var zipCluster = L.markerClusterGroup().addTo(map);
 
 // 2. Fonction d'import du CSV ZIP
 function importerZIP(csvFile, groupLayer) {
@@ -146,9 +149,9 @@ function importerZIP(csvFile, groupLayer) {
                 shadowSize: [41, 41]
               });
               // Ajoute le marqueur ZIP + infobulle au survol
-              L.marker([lat, lon], {icon: redIcon})
-                .addTo(groupLayer)
-                .bindTooltip(nom, {permanent: false, direction: "top"});
+              let marker = L.marker([lat, lon], {icon: redIcon})
+  .bindTooltip(nom, {permanent: false, direction: "top"});
+groupLayer.addLayer(marker); 
             }
           });
         }
@@ -159,7 +162,7 @@ function importerZIP(csvFile, groupLayer) {
 importerZIP('ZIP PACA BFC Grand-Est.csv', zipLayer);
 
 // 4. Ajoute le contrôle de calque
-L.control.layers(null, {'Communes ZIP': zipLayer}).addTo(map);
+L.control.layers(null, {'Communes ZIP': zipCluster}).addTo(map);
     map.on('click', function(e) {
       var popupContent = 
         `<form id="offreForm">
