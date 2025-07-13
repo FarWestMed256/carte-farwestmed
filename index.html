@@ -157,6 +157,9 @@ function importerZIP(csvFile, groupLayer) {
               let marker = L.marker([lat, lon], {icon: redIcon})
   .bindTooltip(nom, {permanent: false, direction: "top"});
 groupLayer.addLayer(marker); 
+              // Ajoute cette ligne juste après avoir créé le marker :
+if (!window.markersByName) window.markersByName = {};
+window.markersByName[nom.toLowerCase()] = marker;
             }
           });
         }
@@ -167,6 +170,19 @@ groupLayer.addLayer(marker);
 importerZIP('ZIP PACA BFC Grand-Est.csv', zipCluster);
 importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/ZIP%20ARA.csv', zipCluster);
     importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/main/ZIP_Bretagne_clean.csv', zipCluster);
+    document.getElementById('rechercheCommune').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    var val = this.value.trim().toLowerCase();
+    if (!val) return;
+    if (window.markersByName && window.markersByName[val]) {
+      var marker = window.markersByName[val];
+      map.setView(marker.getLatLng(), 13);
+      marker.openPopup();
+    } else {
+      alert("Commune non trouvée. Tape le nom exact !");
+    }
+  }
+});
 // 4. Ajoute le contrôle de calque
 L.control.layers(null, {'Communes ZIP': zipCluster}).addTo(map);
     map.on('click', function(e) {
