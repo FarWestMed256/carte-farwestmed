@@ -160,7 +160,7 @@ groupLayer.addLayer(marker);
 }
 // 3. Importe le calque ZIP (mets le nom réel de ton fichier CSV !)
 importerZIP('ZIP PACA BFC Grand-Est.csv', zipCluster);
-
+importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/ZIP%20ARA.csv', zipCluster);
 // 4. Ajoute le contrôle de calque
 L.control.layers(null, {'Communes ZIP': zipCluster}).addTo(map);
     map.on('click', function(e) {
