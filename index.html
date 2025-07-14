@@ -36,16 +36,50 @@
     .btn-postuler:hover {
       background: #ffe49c;
     }
+    #autocomplete-list {
+  background: #292929;
+  color: #fff;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 4px 16px #0003;
+  max-height: 280px;
+  overflow-y: auto;
+  position: absolute;
+  z-index: 1200;
+  width: 320px;
+  font-size: 1em;
+  padding: 0;
+  margin: 0;
+}
+.autocomplete-suggestion {
+  padding: 8px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #3334;
+  user-select: none;
+  transition: background 0.12s;
+}
+.autocomplete-suggestion:last-child { border-bottom: none; }
+.autocomplete-suggestion:hover, .autocomplete-suggestion.active {
+  background: #ffe49c;
+  color: #333;
+}
+.autocomplete-highlight {
+  background: #ffe49c;
+  color: #222;
+  font-weight: bold;
+  padding: 0 2px;
+  border-radius: 2px;
+}
   </style>
 </head>
 <body>
-  <input>
-    id="rechercheCommune"
-    type="text"
-    placeholder="Rechercher une commune ZIP ou une adresse..."
-    style="position: absolute; top: 120px; left: 40px; right: auto; z-index: 1000; padding:8px; width:320px; border-radius:10px; border:1px solid #ccc; font-size:1em;">
-  <div id="autocomplete-list" style="position:absolute;top:160px;left:40px;right:auto;z-index:1200;width:320px;"></div>
-  <div id="map"></div>
+  <input
+  id="rechercheCommune"
+  type="text"
+  autocomplete="off"
+  placeholder="Rechercher une commune ZIP ou une adresse..."
+  style="position: absolute; top: 120px; left: 40px; z-index: 1000; padding:8px; width:320px; border-radius:10px; border:1px solid #ccc; font-size:1em;">
+<div id="autocomplete-list" style="position:absolute;top:160px;left:40px;z-index:1200;width:320px;"></div>
+<div id="map"></div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <script>
     function cleanNom(str) {
