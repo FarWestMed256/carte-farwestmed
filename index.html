@@ -221,23 +221,6 @@ document.getElementById('rechercheCommune').addEventListener('input', function(e
   const val = cleanNom(this.value.trim());
   const datalist = document.getElementById('communes-list');
   let suggestions = [];
-
-  // 1. Ajoute les communes ZIP depuis tes markers
-  if (window.markersByName) {
-    Object.keys(window.markersByName).forEach(function(key) {
-      let marker = window.markersByName[key];
-      if (marker && marker.options && marker.options.title) {
-        // Filtre sur le contenu saisi (tolérance accent/casse)
-        if (
-          cleanNom(marker.options.title).indexOf(val) !== -1 ||
-          key.indexOf(val) !== -1
-        ) {
-          suggestions.push(marker.options.title);
-        }
-      }
-    });
-  }
-
   // 2. Appelle l’API du gouvernement pour toutes les adresses/communes France
   if (this.value.length > 2) {
     fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(this.value) + '&limit=20')
