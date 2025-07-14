@@ -181,15 +181,38 @@ importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/re
     importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/main/ZIP_Bretagne_clean.csv', zipCluster);
     document.getElementById('rechercheCommune').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
-var val = cleanNom(this.value.trim());
-    if (!val) return;
-    if (window.markersByName && window.markersByName[val]) {
-      var marker = window.markersByName[val];
-      map.setView(marker.getLatLng(), 13);
-      marker.openPopup();
-    } else {
-      alert("Commune non trouvée. Tape le nom exact !");
+    var recherche = this.value.trim();
+    var val = cleanNom(recherche);
+
+    // 1. Recherche sur markers ZIP
+    var trouve = null;
+    Object.keys(window.markersByName).forEach(function(key) {
+      var marker = window.markersByName[key];
+      if (marker && marker.options && cleanNom(marker.options.title || key) === val) {
+        trouve = marker;
+      }
+    });
+    if (trouve) {
+      map.setView(trouve.getLatLng(), 13);
+      trouve.openPopup();
+      return;
     }
+
+    // 2. Sinon, géocodage général France (API gouvernementale)
+    fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(recherche) + '&limit=1')
+      .then(r => r.json())
+      .then(json => {
+        if (json.features && json.features.length > 0) {
+          var coords = json.features[0].geometry.coordinates;
+          var label = json.features[0].properties.label;
+          map.setView([coords[1], coords[0]], 16); // [lat, lon]
+          // Ajoute un marker temporaire unique
+          if (window.chercheMarker) map.removeLayer(window.chercheMarker);
+          window.chercheMarker = L.marker([coords[1], coords[0]]).addTo(map).bindPopup(label).openPopup();
+        } else {
+          alert("Adresse ou commune non trouvée.");
+        }
+      });
   }
 });
 // 4. Ajoute le contrôle de calque
