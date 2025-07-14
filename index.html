@@ -227,7 +227,7 @@ document.getElementById('rechercheCommune').addEventListener('input', function(e
 // Fonction utilitaire pour remplir le datalist
 function majDatalist(suggestions, datalist) {
   // Limite à 10 pour la lisibilité
-  suggestions = suggestions.slice(0, 10);
+  suggestions = suggestions.slice(0, 20);
   datalist.innerHTML = suggestions.map(s => `<option value="${s}">`).join('');
 }
     document.getElementById('rechercheCommune').addEventListener('keydown', function(e) {
