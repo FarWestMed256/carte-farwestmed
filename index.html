@@ -258,47 +258,141 @@ document.getElementById('rechercheCommune').addEventListener('input', function(e
 });
 
 // Fonction utilitaire pour remplir le datalist
-function majDatalist(suggestions, datalist) {
-  // Limite à 10 pour la lisibilité
-  suggestions = suggestions.slice(0, 20);
-  datalist.innerHTML = suggestions.map(s => `<option value="${s}">`).join('');
-}
-    document.getElementById('rechercheCommune').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    var recherche = this.value.trim();
-    var val = cleanNom(recherche);
+// ------------------- AUTOCOMPLETE CUSTOM ZIP + ADRESSE -------------------
+let autocompleteIndex = -1; // pour le survol clavier
 
-    // 1. Recherche sur markers ZIP
-    var trouve = null;
+document.getElementById('rechercheCommune').addEventListener('input', function(e) {
+  const val = cleanNom(this.value.trim());
+  const raw = this.value.trim();
+  const box = document.getElementById('autocomplete-list');
+  let suggestions = [];
+
+  // 1. Ajoute les communes ZIP (ZIP FarWestMed)
+  if (window.markersByName) {
     Object.keys(window.markersByName).forEach(function(key) {
-      var marker = window.markersByName[key];
-      if (marker && marker.options && cleanNom(marker.options.title || key) === val) {
-        trouve = marker;
+      let marker = window.markersByName[key];
+      if (marker && marker.options && marker.options.title) {
+        if (cleanNom(marker.options.title).indexOf(val) !== -1 || key.indexOf(val) !== -1) {
+          suggestions.push(marker.options.title);
+        }
       }
     });
-    if (trouve) {
-      map.setView(trouve.getLatLng(), 13);
-      trouve.openPopup();
-      return;
-    }
+  }
 
-    // 2. Sinon, géocodage général France (API gouvernementale)
-    fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(recherche) + '&limit=1')
+  // 2. Ajoute les suggestions adresses API data.gouv
+  let apiDone = false;
+  const fill = (finalSuggestions) => {
+    // Surlignage
+    let regex = new RegExp('('+raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')+')', 'ig');
+    box.innerHTML = finalSuggestions.slice(0, 20).map((s, i) => 
+      `<div class="autocomplete-suggestion${i===0 ? ' active':''}" tabindex="-1" data-label="${s.replace(/"/g,'&quot;')}">
+        ${s.replace(regex, '<span class="autocomplete-highlight">$1</span>')}
+      </div>`
+    ).join('');
+    autocompleteIndex = 0;
+  };
+
+  if (raw.length > 2) {
+    fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(raw) + '&limit=20')
       .then(r => r.json())
       .then(json => {
         if (json.features && json.features.length > 0) {
-          var coords = json.features[0].geometry.coordinates;
-          var label = json.features[0].properties.label;
-          map.setView([coords[1], coords[0]], 16); // [lat, lon]
-          // Ajoute un marker temporaire unique
-          if (window.chercheMarker) map.removeLayer(window.chercheMarker);
-          window.chercheMarker = L.marker([coords[1], coords[0]]).addTo(map).bindPopup(label).openPopup();
-        } else {
-          alert("Adresse ou commune non trouvée.");
+          json.features.forEach(f => {
+            if (suggestions.indexOf(f.properties.label) === -1) {
+              suggestions.push(f.properties.label);
+            }
+          });
         }
+        fill(suggestions);
       });
+  } else {
+    fill(suggestions);
   }
 });
+
+// 3️⃣ Sélection à la souris
+document.getElementById('autocomplete-list').addEventListener('mousedown', function(e) {
+  if (e.target.classList.contains('autocomplete-suggestion')) {
+    document.getElementById('rechercheCommune').value = e.target.dataset.label;
+    triggerRechercheCommune(e.target.dataset.label);
+    this.innerHTML = "";
+  }
+});
+
+// 4️⃣ Navigation clavier (flèches + entrée)
+document.getElementById('rechercheCommune').addEventListener('keydown', function(e) {
+  const box = document.getElementById('autocomplete-list');
+  let items = Array.from(box.children);
+  if (!items.length) return;
+
+  if (e.key === 'ArrowDown') {
+    autocompleteIndex = (autocompleteIndex + 1) % items.length;
+    items.forEach(el => el.classList.remove('active'));
+    items[autocompleteIndex].classList.add('active');
+    items[autocompleteIndex].scrollIntoView({block:'nearest'});
+    e.preventDefault();
+  }
+  if (e.key === 'ArrowUp') {
+    autocompleteIndex = (autocompleteIndex - 1 + items.length) % items.length;
+    items.forEach(el => el.classList.remove('active'));
+    items[autocompleteIndex].classList.add('active');
+    items[autocompleteIndex].scrollIntoView({block:'nearest'});
+    e.preventDefault();
+  }
+  if (e.key === 'Enter') {
+    if (items[autocompleteIndex]) {
+      this.value = items[autocompleteIndex].dataset.label;
+      triggerRechercheCommune(items[autocompleteIndex].dataset.label);
+      box.innerHTML = "";
+      e.preventDefault();
+    }
+  }
+  if (e.key === 'Escape') {
+    box.innerHTML = "";
+  }
+});
+
+// 5️⃣ Sélection logique (ce qui se passe quand on choisit une suggestion)
+function triggerRechercheCommune(val) {
+  var recherche = val.trim();
+  var key = cleanNom(recherche);
+  // Recherche ZIP
+  var trouve = null;
+  Object.keys(window.markersByName).forEach(function(k) {
+    var marker = window.markersByName[k];
+    if (marker && marker.options && cleanNom(marker.options.title || k) === key) {
+      trouve = marker;
+    }
+  });
+  if (trouve) {
+    map.setView(trouve.getLatLng(), 13);
+    trouve.openPopup();
+    return;
+  }
+  // Sinon API adresse
+  fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(recherche) + '&limit=1')
+    .then(r => r.json())
+    .then(json => {
+      if (json.features && json.features.length > 0) {
+        var coords = json.features[0].geometry.coordinates;
+        var label = json.features[0].properties.label;
+        map.setView([coords[1], coords[0]], 16);
+        if (window.chercheMarker) map.removeLayer(window.chercheMarker);
+        window.chercheMarker = L.marker([coords[1], coords[0]]).addTo(map).bindPopup(label).openPopup();
+      } else {
+        alert("Adresse ou commune non trouvée.");
+      }
+    });
+}
+
+// Fermer suggestions quand on clique hors du champ
+document.addEventListener('mousedown', function(e) {
+  if (!document.getElementById('autocomplete-list').contains(e.target) &&
+      e.target !== document.getElementById('rechercheCommune')) {
+    document.getElementById('autocomplete-list').innerHTML = "";
+  }
+});
+    
 // 4. Ajoute le contrôle de calque
 L.control.layers(null, {'Communes ZIP': zipCluster}).addTo(map);
     map.on('click', function(e) {
