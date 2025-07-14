@@ -163,7 +163,7 @@ function importerZIP(csvFile, groupLayer) {
                 shadowSize: [41, 41]
               });
               // Ajoute le marqueur ZIP + infobulle au survol
-              let marker = L.marker([lat, lon], {icon: redIcon})
+              let marker = L.marker([lat, lon], {icon: redIcon, title: nom})
   .bindTooltip(nom, {permanent: false, direction: "top"});
 groupLayer.addLayer(marker); 
               // Ajoute cette ligne juste après avoir créé le marker :
