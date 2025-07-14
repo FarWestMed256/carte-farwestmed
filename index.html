@@ -216,30 +216,6 @@ importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/re
     importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/main/ZIP_Bretagne_clean.csv', zipCluster);
     importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/main/communes_ZIP_Val_de_Loire-2.csv', zipCluster);
     importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/villes_zip_corse_geoloc.csv', zipCluster);
-    // Met à jour dynamiquement la datalist en fonction de la frappe utilisateur
-document.getElementById('rechercheCommune').addEventListener('input', function(e) {
-  const val = cleanNom(this.value.trim());
-  const datalist = document.getElementById('communes-list');
-  let suggestions = [];
-  // 2. Appelle l’API du gouvernement pour toutes les adresses/communes France
-  if (this.value.length > 2) {
-    fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(this.value) + '&limit=20')
-      .then(r => r.json())
-      .then(json => {
-        if (json.features && json.features.length > 0) {
-          json.features.forEach(f => {
-            if (suggestions.indexOf(f.properties.label) === -1) {
-              suggestions.push(f.properties.label);
-            }
-          });
-        }
-        majDatalist(suggestions, datalist);
-      });
-  } else {
-    majDatalist(suggestions, datalist);
-  }
-});
-
 // Fonction utilitaire pour remplir le datalist
 // ------------------- AUTOCOMPLETE CUSTOM ZIP + ADRESSE -------------------
 let autocompleteIndex = -1; // pour le survol clavier
