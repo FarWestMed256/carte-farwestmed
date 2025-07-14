@@ -154,7 +154,7 @@ function importerZIP(csvFile, groupLayer) {
           results.data.forEach(function(row) {
             var lat = parseFloat(row.Latitude || row.latitude || row.lat);
             var lon = parseFloat(row.Longitude || row.longitude || row.lon);
-var nom = row["Nom Commune"] || row["Commune"] || row["Ville"] || row["Nom"] || row.nom || "Ville ZIP";            
+var nom = row["commune"] || row["Commune"] || row["Nom Commune"] || row["Ville"] || row["Nom"] || row.nom || "Ville ZIP";            
             if (!isNaN(lat) && !isNaN(lon)) {
               var redIcon = L.icon({
                 iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
