@@ -169,15 +169,49 @@ const iconesTypeOffre = {
                 data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
               `;
 
-            var typeOffre = (offre["Titre de l’offre"] || "").trim();
-console.log("Type d'offre:", typeOffre, "| URL icône:", iconesTypeOffre[typeOffre]);
-var iconUrl = iconesTypeOffre[typeOffre] || "https://cdn-icons-png.flaticon.com/512/3208/3208707.png";
-console.log("Type d'offre trouvé:", typeOffre, "| Icone:", iconUrl);
-var customIcon = L.icon({
-  iconUrl: iconUrl,
-  iconSize: [34, 38],
-  iconAnchor: [17, 38],
-  popupAnchor: [1, -34]
+            const emojisTypeOffre = {
+  "Médecin généraliste": "🩺",
+  "Médecin spécialiste": "🩻",
+  "Kinésithérapeute": "💪",
+  "Sage-femme": "🤱",
+  "Infirmier(e) diplômé(e) d’État (IDE)": "💉",
+  "Infirmier(e) Asalée": "💉",
+  "Orthophoniste": "🗣️",
+  "Orthoptiste": "👁️",
+  "Psychologue": "🧠",
+  "Ergothérapeute": "🦾",
+  "Pédicure-podologue": "🦶",
+  "Diététicien(ne)": "🥗",
+  "Psychomotricien(ne)": "🤸",
+  "Ostéopathe": "👐",
+  "Chirurgien-dentiste": "🦷",
+  "Ophtalmologiste": "👓",
+  "Pharmacien(ne)": "💊",
+  "Secrétaire médical(e)": "🗂️",
+  "Assistant(e) médical(e)": "👩‍💼",
+  "Aide-soignant(e)": "🤲",
+  "Autre professionnel de santé": "⚕️"
+};
+var typeOffre = (offre["Titre de l’offre"] || "").trim();
+var emoji = emojisTypeOffre[typeOffre] || "❓";
+
+// Création d’un DivIcon Leaflet (affiche l’émoji dans un rond blanc)
+var customIcon = L.divIcon({
+  html: `<div style="
+    font-size:2.2em;
+    width:46px;height:46px;
+    border-radius:50%;
+    background:#fff;
+    border:2px solid #eee;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 1px 5px #0002;
+  ">${emoji}</div>`,
+  className: '',   // pas de classe personnalisée (on utilise le style inline)
+  iconSize: [46,46],
+  iconAnchor: [23,46],
+  popupAnchor: [0,-46]
 });
 var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).addTo(map).bindPopup(popupHtml);
 
