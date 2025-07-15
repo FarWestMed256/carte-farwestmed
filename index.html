@@ -169,7 +169,9 @@ const iconesTypeOffre = {
                 data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
               `;
 
-            var iconUrl = "https://cdn-icons-png.flaticon.com/512/3208/3208707.png";
+            var typeOffre = (offre["Titre de l’offre"] || "").trim();
+var iconUrl = iconesTypeOffre[typeOffre] || "https://cdn-icons-png.flaticon.com/512/3208/3208707.png";
+console.log("Type d'offre trouvé:", typeOffre, "| Icone:", iconUrl);
 var customIcon = L.icon({
   iconUrl: iconUrl,
   iconSize: [34, 38],
