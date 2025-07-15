@@ -88,6 +88,30 @@
     .toLowerCase()
     .replace(/[\s'-]/g,"");
 }
+    // Mapping type d'offre → URL d’icône
+const iconesTypeOffre = {
+  "Médecin généraliste": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/doctor.svg",
+  "Médecin spécialiste": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/doctor.svg",
+  "Kinésithérapeute": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/physiotherapist.svg",
+  "Sage-femme": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/midwife.svg",
+  "Infirmier(e) diplômé(e) d’État (IDE)": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/nurse.svg",
+  "Infirmier(e) Asalée": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/nurse.svg",
+  "Orthophoniste": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/speech-therapist.svg",
+  "Orthoptiste": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/optometrist.svg",
+  "Psychologue": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/psychologist.svg",
+  "Ergothérapeute": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/physiotherapist.svg",
+  "Pédicure-podologue": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/foot-doctor.svg",
+  "Diététicien(ne)": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/dietitian.svg",
+  "Psychomotricien(ne)": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/psychologist.svg",
+  "Ostéopathe": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/physiotherapist.svg",
+  "Chirurgien-dentiste": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/dentist.svg",
+  "Ophtalmologiste": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/ophthalmologist.svg",
+  "Pharmacien(ne)": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/pharmacist.svg",
+  "Secrétaire médical(e)": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/receptionist.svg",
+  "Assistant(e) médical(e)": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/medical-assistant.svg",
+  "Aide-soignant(e)": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/nurse.svg",
+  "Autre professionnel de santé": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/doctor.svg"
+};
     // URLs d'API Sheet.best pour chaque sheet
     const API_OFFRES = "https://api.sheetbest.com/sheets/c6bdfcfd-13c2-4f7e-8b26-4fd3f0be5068";
     const API_CANDIDATURES = "https://api.sheetbest.com/sheets/fea9ad93-6045-46ef-af9d-9ed93a9f5a4c";
@@ -145,7 +169,22 @@
                 data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
               `;
 
-            var marker = L.marker([offre.Latitude, offre.Longitude]).addTo(map).bindPopup(popupHtml);
+            // 1️⃣ Récupère le type d’offre
+var typeOffre = offre["type de l'offre"] || offre["Type de l’offre"] || offre["Titre de l’offre"] || ""; // adapte selon le nom exact de ta colonne
+
+// 2️⃣ Choisis l’icône correspondante, ou icône rouge par défaut
+var iconUrl = iconesTypeOffre[typeOffre] || "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png";
+var customIcon = L.icon({
+  iconUrl: iconUrl,
+  iconSize: [34, 38],
+  iconAnchor: [17, 38],
+  popupAnchor: [1, -34],
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  shadowSize: [41, 41]
+});
+
+// 3️⃣ Ajoute le marker avec l’icône personnalisée
+var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).addTo(map).bindPopup(popupHtml);
 
             marker.on("popupopen", function() {
               var btn = document.getElementById(postulerId);
@@ -541,7 +580,7 @@ L.control.layers(null, {
         var now = new Date();
   var datePublication = now.toISOString().slice(0, 10);
         var data = {
-          "type de l'offre": form.typeOffre.value,
+          "Titre de l’offre": form.typeOffre.value,
           "Nom de la struct": form.structure.value,
           "Adresse": form.adresse.value,
           "Latitude": form.lat.value,
