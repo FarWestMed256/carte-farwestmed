@@ -265,7 +265,7 @@ importerZRR('communes_zrr_geo.csv', zrrCluster);
             var nom = row["Commune"] || row["Nom de la commune"] || row["commune"] || row.nom || "Commune GOLD";
             if (!isNaN(lat) && !isNaN(lon)) {
               var goldIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/rozierguillaume/leaflet-gold-pin/main/marker-gold-trophy.png',
+  iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAlCAYAAAC8QeFCAAAACXBIWXMAAAsSAAALEgHS3X78AAAB6UlEQVRIS+2Vz0oCURSFz71f2IkWF5KLEt2EVFJJdiSRUkhdRPrIGkFiiRQJJLQgVUQ3EKSMikdMiRHN6dQIzNHQczG3PTvZ3PO7Ow99/AfOs3Tc1NMxZtcczEtygHG0AJmsAbHkAcA9uAa9A2xrTxv9EXF6TnIuEy2FgkZ0R3EsmcS7iZ+60PZjDF6VoGELMK8Q0YTQ3gNY5EEvM9D+5w4hbKEWQwPch+oNlzPSB0NcxsYYzL9U6pHTkQnH1EhOARsNAg7FqXMtphJXXEE9ZBQ4vIrTWEH4Dj8SA/c9vI0+QQ6dP0Yu0XZeqSl5X9ip0xPIP3NGBwKRHuPkkpkJUQ1pF7TYKPO2QVGs6cT0KIGxEFrsJKBYZpbePt7AuydICF3JNfZYH0Vkh8A+z6WLOqQ4CsKRIoc1BeYjPHgqkU4jhihby+jJdB0R2xdLKqE1yBLfaW59hOb+bjiLZX0Jt9fGZB2O23llH2FP8jtM8AUv3i/AA9B3hdOwN9+Hc1L65lX+9Yb4kTnVdwHdszAAAAAElFTkSuQmCC',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
