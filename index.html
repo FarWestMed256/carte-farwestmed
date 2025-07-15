@@ -458,7 +458,31 @@ L.control.layers(null, {
       var popupContent = 
         `<form id="offreForm">
           <b>Ajouter une offre</b><br>
-          Titre de l’offre :<br><input type="text" name="titre"><br>
+          <label for="typeOffre"><b>Type d'offre :</b></label><br>
+<select id="typeOffre" name="typeOffre" required style="width:100%;padding:6px;border-radius:8px;margin-bottom:8px;">
+  <option value="">-- Sélectionner --</option>
+  <option value="Médecin généraliste">Médecin généraliste</option>
+  <option value="Médecin spécialiste">Médecin spécialiste (spécialité à préciser)</option>
+  <option value="Kinésithérapeute">Kinésithérapeute</option>
+  <option value="Sage-femme">Sage-femme</option>
+  <option value="Infirmier(e) diplômé(e) d’État (IDE)">Infirmier(e) diplômé(e) d’État (IDE)</option>
+  <option value="Infirmier(e) Asalée">Infirmier(e) Asalée</option>
+  <option value="Orthophoniste">Orthophoniste</option>
+  <option value="Orthoptiste">Orthoptiste</option>
+  <option value="Psychologue">Psychologue</option>
+  <option value="Ergothérapeute">Ergothérapeute</option>
+  <option value="Pédicure-podologue">Pédicure-podologue</option>
+  <option value="Diététicien(ne)">Diététicien(ne)</option>
+  <option value="Psychomotricien(ne)">Psychomotricien(ne)</option>
+  <option value="Ostéopathe">Ostéopathe</option>
+  <option value="Chirurgien-dentiste">Chirurgien-dentiste</option>
+  <option value="Ophtalmologiste">Ophtalmologiste</option>
+  <option value="Pharmacien(ne)">Pharmacien(ne)</option>
+  <option value="Secrétaire médical(e)">Secrétaire médical(e)</option>
+  <option value="Assistant(e) médical(e)">Assistant(e) médical(e)</option>
+  <option value="Aide-soignant(e)">Aide-soignant(e)</option>
+  <option value="Autre professionnel de santé">Autre professionnel de santé</option>
+</select>
           Nom de la structure :<br><input type="text" name="structure"><br>
           Adresse :<br><input type="text" name="adresse"><br>
           Latitude :<br><input type="text" name="lat" value="${e.latlng.lat}" readonly><br>
@@ -517,7 +541,7 @@ L.control.layers(null, {
         var now = new Date();
   var datePublication = now.toISOString().slice(0, 10);
         var data = {
-          "Titre de l’offre": form.titre.value,
+          "type de l'offre": form.typeOffre.value,
           "Nom de la struct": form.structure.value,
           "Adresse": form.adresse.value,
           "Latitude": form.lat.value,
