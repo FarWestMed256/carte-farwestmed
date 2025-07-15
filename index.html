@@ -170,7 +170,7 @@ const iconesTypeOffre = {
               `;
 
             // 1️⃣ Récupère le type d’offre
-var typeOffre = offre["type de l'offre"] || offre["Type de l’offre"] || offre["Titre de l’offre"] || ""; // adapte selon le nom exact de ta colonne
+var typeOffre = offre["Titre de l’offre"] || "";
 
 // 2️⃣ Choisis l’icône correspondante, ou icône rouge par défaut
 var iconUrl = iconesTypeOffre[typeOffre] || "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png";
