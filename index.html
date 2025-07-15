@@ -169,21 +169,13 @@ const iconesTypeOffre = {
                 data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
               `;
 
-            // 1️⃣ Récupère le type d’offre
-var typeOffre = offre["Titre de l’offre"] || "";
-
-// 2️⃣ Choisis l’icône correspondante, ou icône rouge par défaut
-var iconUrl = iconesTypeOffre[typeOffre] || "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png";
+            var iconUrl = "https://cdn-icons-png.flaticon.com/512/3208/3208707.png";
 var customIcon = L.icon({
   iconUrl: iconUrl,
   iconSize: [34, 38],
   iconAnchor: [17, 38],
-  popupAnchor: [1, -34],
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  shadowSize: [41, 41]
+  popupAnchor: [1, -34]
 });
-
-// 3️⃣ Ajoute le marker avec l’icône personnalisée
 var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).addTo(map).bindPopup(popupHtml);
 
             marker.on("popupopen", function() {
