@@ -187,8 +187,7 @@ function importerZIP(csvFile, groupLayer) {
           results.data.forEach(function(row) {
             var lat = parseFloat(row.Latitude || row.latitude || row.lat);
             var lon = parseFloat(row.Longitude || row.longitude || row.lon);
-var nom = row["commune"] || row["Commune"] || row["Nom Commune"] || row["Ville"] || row["Nom"] || row.nom || "Ville ZIP";            
-            if (!isNaN(lat) && !isNaN(lon)) {
+var nom = row["Nom de la commune"] || row["Commune"] || row["commune"] || row["Nom Commune"] || row["Ville"] || row["Nom"] || row.nom || "Ville ZIP";            if (!isNaN(lat) && !isNaN(lon)) {
               var redIcon = L.icon({
                 iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
                 iconSize: [25, 41],
@@ -211,12 +210,7 @@ window.markersByName[cleanNom(nom)] = marker;
     });
 }
     // 3. Importe le calque ZIP (mets le nom réel de ton fichier CSV !)
-importerZIP('ZIP PACA BFC Grand-Est.csv', zipCluster);
-importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/ZIP%20ARA.csv', zipCluster);
-    importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/main/ZIP_Bretagne_clean.csv', zipCluster);
-    importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/main/communes_ZIP_Val_de_Loire-2.csv', zipCluster);
-    importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/villes_zip_corse_geoloc.csv', zipCluster);
-    importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/zip_hautsdefrance_geo_osm.csv', zipCluster);
+importerZIP('communes_zip_geo.csv', zipCluster);
     function importerZRR(csvFile, groupLayer) {
   fetch(csvFile)
     .then(resp => resp.text())
