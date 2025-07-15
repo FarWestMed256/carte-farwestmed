@@ -170,6 +170,7 @@ const iconesTypeOffre = {
               `;
 
             var typeOffre = (offre["Titre de l’offre"] || "").trim();
+console.log("Type d'offre:", typeOffre, "| URL icône:", iconesTypeOffre[typeOffre]);
 var iconUrl = iconesTypeOffre[typeOffre] || "https://cdn-icons-png.flaticon.com/512/3208/3208707.png";
 console.log("Type d'offre trouvé:", typeOffre, "| Icone:", iconUrl);
 var customIcon = L.icon({
