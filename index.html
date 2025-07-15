@@ -172,7 +172,7 @@
     chargerOffres();
 // 1. Crée le layer ZIP
 var zipCluster = L.markerClusterGroup().addTo(map);
-
+    var zrrCluster = L.markerClusterGroup().addTo(map);
 // 2. Fonction d'import du CSV ZIP
 function importerZIP(csvFile, groupLayer) {
   console.log('importerZIP appelée !');
@@ -210,13 +210,48 @@ window.markersByName[cleanNom(nom)] = marker;
       });
     });
 }
-// 3. Importe le calque ZIP (mets le nom réel de ton fichier CSV !)
+    // 3. Importe le calque ZIP (mets le nom réel de ton fichier CSV !)
 importerZIP('ZIP PACA BFC Grand-Est.csv', zipCluster);
 importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/ZIP%20ARA.csv', zipCluster);
     importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/main/ZIP_Bretagne_clean.csv', zipCluster);
     importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/main/communes_ZIP_Val_de_Loire-2.csv', zipCluster);
     importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/villes_zip_corse_geoloc.csv', zipCluster);
     importerZIP('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/zip_hautsdefrance_geo_osm.csv', zipCluster);
+    function importerZRR(csvFile, groupLayer) {
+  fetch(csvFile)
+    .then(resp => resp.text())
+    .then(csvText => {
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          results.data.forEach(function(row) {
+            var lat = parseFloat(row.Latitude || row.latitude || row.lat);
+            var lon = parseFloat(row.Longitude || row.longitude || row.lon);
+            var nom = row["Commune"] || row["commune"] || row["Nom Commune"] || row["Ville"] || row["Nom"] || row.nom || "Ville ZRR";            
+            if (!isNaN(lat) && !isNaN(lon)) {
+              var greenIcon = L.icon({
+                iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+                shadowSize: [41, 41]
+              });
+              let marker = L.marker([lat, lon], {icon: greenIcon, title: nom})
+                .bindTooltip(nom, {permanent: false, direction: "top"});
+              groupLayer.addLayer(marker);
+
+              // On peut aussi les référencer dans un autre objet si besoin
+              if (!window.zrrMarkersByName) window.zrrMarkersByName = {};
+              window.zrrMarkersByName[cleanNom(nom)] = marker;
+            }
+          });
+        }
+      });
+    });
+}
+importerZRR('communes_zrr_geo.csv', zrrCluster);
 // Fonction utilitaire pour remplir le datalist
 // ------------------- AUTOCOMPLETE CUSTOM ZIP + ADRESSE -------------------
 let autocompleteIndex = -1; // pour le survol clavier
@@ -354,7 +389,10 @@ document.addEventListener('mousedown', function(e) {
 });
     
 // 4. Ajoute le contrôle de calque
-L.control.layers(null, {'Communes ZIP': zipCluster}).addTo(map);
+L.control.layers(null, {
+  'Communes ZIP': zipCluster,
+  'Communes ZRR': zrrCluster
+}).addTo(map);
     map.on('click', function(e) {
       var popupContent = 
         `<form id="offreForm">
