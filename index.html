@@ -592,38 +592,7 @@ L.control.layers(null, {
   'Communes ZRR': zrrCluster,
   'Communes GOLD: ZIP+ZRR': goldCluster
 }).addTo(map);
-map.on('click', function(e) {
-  var popupContent = `
-    <b>Que souhaitez-vous faire&nbsp;?</b><br><br>
-    <button id="btnDeposerOffre" style="background:#f9d875;color:#4b3c10;padding:8px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-bottom:12px;font-weight:bold;">
-      Déposer une offre d'emploi
-    </button><br>
-    <button id="btnProposerLocation" style="background:#fffbe7;color:#554400;padding:8px 18px;font-size:1em;border-radius:8px;border:1px solid #ffe49c;cursor:pointer;font-weight:bold;">
-      Mettre un cabinet ou bureau en location
-    </button>
-  `;
-  var popup = L.popup()
-    .setLatLng(e.latlng)
-    .setContent(popupContent)
-    .openOn(map);
 
-  setTimeout(function() {
-    // Si on clique sur "Déposer une offre d'emploi"
-    var btnDeposer = document.getElementById('btnDeposerOffre');
-    if (btnDeposer) {
-      btnDeposer.onclick = function() {
-        afficherFormulaireOffre(e.latlng);
-      };
-    }
-    // Si on clique sur "Mettre un cabinet ou bureau en location"
-    var btnLoc = document.getElementById('btnProposerLocation');
-    if (btnLoc) {
-      btnLoc.onclick = function() {
-        afficherFormulaireLocation(e.latlng);
-      };
-    }
-  }, 200);
-});
     function afficherFormulaireOffre(latlng) {
       var popupContent = 
         `<form id="offreForm">
@@ -897,6 +866,39 @@ L.marker([form.lat.value, form.lng.value], {icon: locationIcon})
     });
   };
 }
+map.on('click', function(e) {
+  var popupContent = `
+    <b>Que souhaitez-vous faire&nbsp;?</b><br><br>
+    <button id="btnDeposerOffre" style="background:#f9d875;color:#4b3c10;padding:8px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-bottom:12px;font-weight:bold;">
+      Déposer une offre d'emploi
+    </button><br>
+    <button id="btnProposerLocation" style="background:#fffbe7;color:#554400;padding:8px 18px;font-size:1em;border-radius:8px;border:1px solid #ffe49c;cursor:pointer;font-weight:bold;">
+      Mettre un cabinet ou bureau en location
+    </button>
+  `;
+  var popup = L.popup()
+    .setLatLng(e.latlng)
+    .setContent(popupContent)
+    .openOn(map);
+
+  setTimeout(function() {
+    // Si on clique sur "Déposer une offre d'emploi"
+    var btnDeposer = document.getElementById('btnDeposerOffre');
+    if (btnDeposer) {
+      btnDeposer.onclick = function() {
+        afficherFormulaireOffre(e.latlng);
+      };
+    }
+    // Si on clique sur "Mettre un cabinet ou bureau en location"
+    var btnLoc = document.getElementById('btnProposerLocation');
+    if (btnLoc) {
+      btnLoc.onclick = function() {
+        afficherFormulaireLocation(e.latlng);
+      };
+    }
+  }, 200);
+});
+    
     // PATCH ULTIME : Listener global pour bouton Envoyer (candidature)
     document.body.addEventListener('click', function(e) {
       if (e.target && e.target.id === "sendCandidature") {
