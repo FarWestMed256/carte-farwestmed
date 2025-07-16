@@ -260,6 +260,54 @@ var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).add
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
     chargerOffres();
+    function chargerLocationsExistantes() {
+  // L’API Apps Script accepte aussi le GET pour lire la Sheet
+  fetch('https://script.google.com/macros/s/AKfycbzF2kcGi0FqaxQha_NbyKhqrZ25Fn0vJE3Gc2jd1-Tdj828e9IBCUMLoj4-C920HH3-_g/exec')
+    .then(resp => resp.json())
+    .then(data => {
+      data.forEach(function(loc) {
+        // Vérifie si la ligne a bien latitude+longitude
+        if (!loc.Latitude || !loc.Longitude) return;
+        // Construit la galerie photo
+        let gallery = "";
+        if (loc.Photos) {
+          let urls = loc.Photos.split(",");
+          gallery = '<div class="photo-gallery">' +
+            urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
+            '</div>';
+        }
+        // Icône 🏢
+        var locationIcon = L.divIcon({
+          html: `<div style="
+            font-size:2em;
+            width:40px;height:40px;
+            border-radius:50%;
+            background:#fffbe7;
+            border:2px solid #ffe49c;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-shadow:0 1px 5px #ffd70077;
+          ">🏢</div>`,
+          className: '',
+          iconSize: [40, 40],
+          iconAnchor: [20, 40],
+          popupAnchor: [0, -40]
+        });
+
+        L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
+          .addTo(map)
+          .bindPopup(
+            `<b>Cabinet ou bureau à louer</b><br>
+            ${loc.Adresse || ""}<br>
+            ${loc.Description || ""}<br>
+            ${gallery}
+            <b>Contact :</b> ${loc.Contact || ""}<br>
+            ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}`
+          );
+      });
+    });
+}
 // 1. Crée le layer ZIP
 var zipCluster = L.markerClusterGroup().addTo(map);
     var zrrCluster = L.markerClusterGroup().addTo(map);
