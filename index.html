@@ -544,7 +544,39 @@ L.control.layers(null, {
   'Communes ZRR': zrrCluster,
   'Communes GOLD: ZIP+ZRR': goldCluster
 }).addTo(map);
-    map.on('click', function(e) {
+map.on('click', function(e) {
+  var popupContent = `
+    <b>Que souhaitez-vous faire&nbsp;?</b><br><br>
+    <button id="btnDeposerOffre" style="background:#f9d875;color:#4b3c10;padding:8px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-bottom:12px;font-weight:bold;">
+      Déposer une offre d'emploi
+    </button><br>
+    <button id="btnProposerLocation" style="background:#fffbe7;color:#554400;padding:8px 18px;font-size:1em;border-radius:8px;border:1px solid #ffe49c;cursor:pointer;font-weight:bold;">
+      Mettre un cabinet ou bureau en location
+    </button>
+  `;
+  var popup = L.popup()
+    .setLatLng(e.latlng)
+    .setContent(popupContent)
+    .openOn(map);
+
+  setTimeout(function() {
+    // Si on clique sur "Déposer une offre d'emploi"
+    var btnDeposer = document.getElementById('btnDeposerOffre');
+    if (btnDeposer) {
+      btnDeposer.onclick = function() {
+        afficherFormulaireOffre(e.latlng);
+      };
+    }
+    // Si on clique sur "Mettre un cabinet ou bureau en location"
+    var btnLoc = document.getElementById('btnProposerLocation');
+    if (btnLoc) {
+      btnLoc.onclick = function() {
+        afficherFormulaireLocation(e.latlng);
+      };
+    }
+  }, 200);
+});
+    function afficherFormulaireOffre(latlng) {
       var popupContent = 
         `<form id="offreForm">
           <b>Ajouter une offre</b><br>
@@ -684,7 +716,119 @@ L.control.layers(null, {
         });
       };
     });
+function afficherFormulaireLocation(latlng) {
+  var popupContent = `
+    <form id="locationForm">
+      <b>Mettre un cabinet ou bureau en location</b><br>
+      Adresse :<br>
+      <input type="text" name="adresse" required><br>
+      Latitude :<br>
+      <input type="text" name="lat" value="${latlng.lat}" readonly><br>
+      Longitude :<br>
+      <input type="text" name="lng" value="${latlng.lng}" readonly><br>
+      Description :<br>
+      <textarea name="description" required></textarea><br>
+      Email :<br>
+      <input type="email" name="email" required><br>
+      Contact (téléphone) :<br>
+      <input type="text" name="contact"><br>
+      Photos :<br>
+      <input type="text" id="locationPhotoURL" name="photos" placeholder="Lien(s) photo..." readonly style="width:70%;"> 
+      <button type="button" id="cloudinaryBtnLocation">Uploader des photos</button><br>
+      <button type="submit" style="margin-top:8px;">Publier l'annonce</button>
+    </form>
+  `;
+  var popup = L.popup()
+    .setLatLng(latlng)
+    .setContent(popupContent)
+    .openOn(map);
 
+  // Gestion Cloudinary pour photos
+  setTimeout(function() {
+    var cloudName = 'damdqxu7t';
+    var uploadBtn = document.getElementById('cloudinaryBtnLocation');
+    var urlField = document.getElementById('locationPhotoURL');
+    if (uploadBtn) {
+      uploadBtn.onclick = function() {
+        cloudinary.openUploadWidget(
+          {
+            cloudName: cloudName,
+            uploadPreset: 'fwmed_unsigned',
+            sources: ['local', 'url', 'camera'],
+            multiple: true,
+            folder: 'locations-farwestmed',
+            cropping: false,
+            resourceType: 'image',
+            maxFileSize: 10485760 // 10MB
+          },
+          function(error, result) {
+            if (!error && result && result.event === "success") {
+              let urls = urlField.value ? urlField.value.split(",") : [];
+              if (result.info.files && Array.isArray(result.info.files)) {
+                urls = urls.concat(result.info.files.map(f => f.uploadInfo.secure_url));
+              } else if (result.info.secure_url) {
+                urls.push(result.info.secure_url);
+              }
+              urlField.value = urls.join(",");
+            }
+          }
+        );
+      }
+    }
+  }, 200);
+
+  // Soumission du formulaire location
+  document.getElementById('locationForm').onsubmit = function(ev){
+    ev.preventDefault();
+    var form = ev.target;
+    var now = new Date();
+    var datePublication = now.toISOString().slice(0, 10);
+
+    var data = {
+      "Adresse": form.adresse.value,
+      "Latitude": form.lat.value,
+      "Longitude": form.lng.value,
+      "Description": form.description.value,
+      "Email": form.email.value,
+      "Contact": form.contact.value,
+      "Photos": form.photos.value,
+      "Statut": "Publiée",
+      "Date de publication": datePublication
+    };
+
+    fetch('https://script.google.com/macros/s/AKfycbzF2kcGi0FqaxQha_NbyKhqrZ25Fn0vJE3Gc2jd1-Tdj828e9IBCUMLoj4-C920HH3-_g/exec', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    })
+    .then(response => {
+      if (response.ok) {
+        // Affiche un marker avec galerie photo cliquable
+        let gallery = "";
+        if (form.photos.value) {
+          let urls = form.photos.value.split(",");
+          gallery = '<div class="photo-gallery">' +
+            urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
+            '</div>';
+        }
+        L.marker([form.lat.value, form.lng.value])
+          .addTo(map)
+          .bindPopup(
+            `<b>Cabinet ou bureau à louer</b><br>
+            ${form.adresse.value}<br>
+            ${form.description.value}<br>
+            ${gallery}
+            <b>Contact :</b> ${form.contact.value}<br>
+            ${form.email.value ? `<b>Email :</b> ${form.email.value}<br>` : ""}`
+          );
+        map.closePopup();
+        showCarteNotification("✅ Annonce de location ajoutée !");
+      } else {
+        showCarteNotification("❌ Erreur lors de l'ajout de l'annonce");
+      }
+    });
+  };
+}
     // PATCH ULTIME : Listener global pour bouton Envoyer (candidature)
     document.body.addEventListener('click', function(e) {
       if (e.target && e.target.id === "sendCandidature") {
