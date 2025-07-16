@@ -733,7 +733,7 @@ Longitude :<br><input type="text" name="lng" value="${latlng.lng}" readonly><br>
         });
       };
     } 
-    
+const API_LOCATIONS = "https://script.google.com/macros/s/AKfycby9l4MtfgVmRnRWuLKQh7P1-4lJgB5zdJnvL0epamuuqeP_eKpv0b2sxs2QyIKwvY6DTg/exec";    
 function afficherFormulaireLocation(latlng) {
   var popupContent = `
     <form id="locationForm">
@@ -814,8 +814,8 @@ function afficherFormulaireLocation(latlng) {
       "Date de publication": datePublication
     };
 
-    fetch('https://script.google.com/macros/s/AKfycbzF2kcGi0FqaxQha_NbyKhqrZ25Fn0vJE3Gc2jd1-Tdj828e9IBCUMLoj4-C920HH3-_g/exec', {
-      method: "POST",
+fetch(API_LOCATIONS, {
+  method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     })
