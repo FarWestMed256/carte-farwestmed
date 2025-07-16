@@ -867,6 +867,7 @@ L.marker([form.lat.value, form.lng.value], {icon: locationIcon})
   };
 }
 map.on('click', function(e) {
+  var latlng = e.latlng;
   var popupContent = `
     <b>Que souhaitez-vous faire&nbsp;?</b><br><br>
     <button id="btnDeposerOffre" style="background:#f9d875;color:#4b3c10;padding:8px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-bottom:12px;font-weight:bold;">
