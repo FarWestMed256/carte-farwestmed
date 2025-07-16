@@ -811,16 +811,35 @@ function afficherFormulaireLocation(latlng) {
             urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
             '</div>';
         }
-        L.marker([form.lat.value, form.lng.value])
-          .addTo(map)
-          .bindPopup(
-            `<b>Cabinet ou bureau à louer</b><br>
-            ${form.adresse.value}<br>
-            ${form.description.value}<br>
-            ${gallery}
-            <b>Contact :</b> ${form.contact.value}<br>
-            ${form.email.value ? `<b>Email :</b> ${form.email.value}<br>` : ""}`
-          );
+      // Crée une icône emoji "immeuble"
+var locationIcon = L.divIcon({
+  html: `<div style="
+    font-size:2em;
+    width:40px;height:40px;
+    border-radius:50%;
+    background:#fffbe7;
+    border:2px solid #ffe49c;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 1px 5px #ffd70077;
+  ">🏢</div>`,
+  className: '',
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+  popupAnchor: [0, -40]
+});
+
+L.marker([form.lat.value, form.lng.value], {icon: locationIcon})
+  .addTo(map)
+  .bindPopup(
+    `<b>Cabinet ou bureau à louer</b><br>
+    ${form.adresse.value}<br>
+    ${form.description.value}<br>
+    ${gallery}
+    <b>Contact :</b> ${form.contact.value}<br>
+    ${form.email.value ? `<b>Email :</b> ${form.email.value}<br>` : ""}`
+  );
         map.closePopup();
         showCarteNotification("✅ Annonce de location ajoutée !");
       } else {
