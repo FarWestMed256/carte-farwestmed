@@ -624,8 +624,8 @@ L.control.layers(null, {
 </select>
           Nom de la structure :<br><input type="text" name="structure"><br>
           Adresse :<br><input type="text" name="adresse"><br>
-          Latitude :<br><input type="text" name="lat" value="${e.latlng.lat}" readonly><br>
-          Longitude :<br><input type="text" name="lng" value="${e.latlng.lng}" readonly><br>
+          Latitude :<br><input type="text" name="lat" value="${latlng.lat}" readonly><br>
+Longitude :<br><input type="text" name="lng" value="${latlng.lng}" readonly><br>
           Description :<br><textarea name="description"></textarea><br>
           Adresse Email (pour recevoir une notification) :<br>
           <input type="email" name="adresseEmail"><br>
@@ -637,7 +637,7 @@ L.control.layers(null, {
           <button type="submit">Publier</button>
         </form>`;
       var popup = L.popup()
-        .setLatLng(e.latlng)
+        .setLatLng(latlng)
         .setContent(popupContent)
         .openOn(map);
 
@@ -878,28 +878,30 @@ map.on('click', function(e) {
     </button>
   `;
   var popup = L.popup()
-    .setLatLng(e.latlng)
+    .setLatLng(latlng)
     .setContent(popupContent)
     .openOn(map);
 
+  // ⬇️ On force un délai de 600ms pour être certain que le DOM est prêt
   setTimeout(function() {
-    // Si on clique sur "Déposer une offre d'emploi"
     var btnDeposer = document.getElementById('btnDeposerOffre');
+    var btnLoc = document.getElementById('btnProposerLocation');
+    // DEBUG
+    console.log('btnDeposer:', btnDeposer, 'btnLoc:', btnLoc);
+
     if (btnDeposer) {
       btnDeposer.onclick = function() {
-        afficherFormulaireOffre(e.latlng);
+        afficherFormulaireOffre(latlng);
       };
     }
-    // Si on clique sur "Mettre un cabinet ou bureau en location"
-    var btnLoc = document.getElementById('btnProposerLocation');
     if (btnLoc) {
       btnLoc.onclick = function() {
-        afficherFormulaireLocation(e.latlng);
+        afficherFormulaireLocation(latlng);
       };
     }
-  }, 200);
+  }, 600);
 });
-    
+   
     // PATCH ULTIME : Listener global pour bouton Envoyer (candidature)
     document.body.addEventListener('click', function(e) {
       if (e.target && e.target.id === "sendCandidature") {
