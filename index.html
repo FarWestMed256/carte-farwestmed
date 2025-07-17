@@ -676,6 +676,7 @@ Longitude :<br><input type="text" name="lng" value="${latlng.lng}" readonly><br>
         var form = ev.target;
         var now = new Date();
   var datePublication = now.toISOString().slice(0, 10);
+        console.log('Formulaire location soumis');
         var data = {
           "Titre de l’offre": form.typeOffre.value,
           "Nom de la struct": form.structure.value,
