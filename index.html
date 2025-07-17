@@ -453,7 +453,7 @@ importerZRR('communes_zrr_geo.csv', zrrCluster);
 
 importerGOLD('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/communes_gold_geo.csv', goldCluster);
     
-    function importerZAC(csvFile, groupLayer) {
+   function importerZAC(csvFile, groupLayer) {
   fetch(csvFile)
     .then(resp => resp.text())
     .then(csvText => {
@@ -462,9 +462,9 @@ importerGOLD('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/r
         skipEmptyLines: true,
         complete: function(results) {
           results.data.forEach(function(row) {
-            var lat = parseFloat(row.Latitude || row.latitude || row.lat);
-            var lon = parseFloat(row.Longitude || row.longitude || row.lon);
-            var nom = row["Commune"] || row["Nom de la commune"] || row["commune"] || row.nom || "Commune ZAC";
+            var lat = parseFloat(row.Latitude);
+            var lon = parseFloat(row.Longitude);
+            var nom = row.Commune || "Commune ZAC";
             if (!isNaN(lat) && !isNaN(lon)) {
               var blueIcon = L.icon({
                 iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
