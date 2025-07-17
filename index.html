@@ -1031,13 +1031,10 @@ document.body.addEventListener('click', function(e) {
     let nom = document.getElementById('interesseNom').value.trim();
     let email = document.getElementById('interesseEmail').value.trim();
     let msg = document.getElementById('interesseMsg').value.trim();
+    let contact = ""; // Remplis si tu veux un champ propriétaire, sinon laisse vide
     let now = new Date().toISOString();
-    let contact = e.target.getAttribute('data-contact') || "";
-    let emailProprio = e.target.getAttribute('data-email') || "";
-    let adresse = e.target.getAttribute('data-adresse') || "";
-    let description = e.target.getAttribute('data-description') || "";
 
-    fetch('https://app.nocodb.com/api/v2/tables/mc6pizl1vob700o/records', {
+    fetch('https://app.nocodb.com/api/v2/tables/ml293gbtbvnhsyf/records', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1051,15 +1048,12 @@ document.body.addEventListener('click', function(e) {
         "Date": now
       })
     })
-    .then(response => {
-      if (response.ok) {
-        showCarteNotification("✅ Votre demande a été transmise !");
-        setTimeout(() => { window.map.closePopup(); }, 1100);
-      } else {
-        showCarteNotification("❌ Erreur lors de l'envoi.");
-      }
+    .then(r => r.json())
+    .then(resp => {
+      showCarteNotification("✅ Votre demande a été transmise !");
+      setTimeout(() => { window.map.closePopup(); }, 1200);
     })
-    .catch(() => showCarteNotification("❌ Erreur réseau."));
+    .catch(() => showCarteNotification("❌ Erreur lors de l'envoi."));
   }
 });
   </script>
