@@ -452,6 +452,39 @@ importerZRR('communes_zrr_geo.csv', zrrCluster);
 }
 
 importerGOLD('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/communes_gold_geo.csv', goldCluster);
+    
+    function importerZAC(csvFile, groupLayer) {
+  fetch(csvFile)
+    .then(resp => resp.text())
+    .then(csvText => {
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          results.data.forEach(function(row) {
+            var lat = parseFloat(row.Latitude || row.latitude || row.lat);
+            var lon = parseFloat(row.Longitude || row.longitude || row.lon);
+            var nom = row["Commune"] || row["Nom de la commune"] || row["commune"] || row.nom || "Commune ZAC";
+            if (!isNaN(lat) && !isNaN(lon)) {
+              var blueIcon = L.icon({
+                iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+                shadowSize: [41, 41]
+              });
+              let marker = L.marker([lat, lon], {icon: blueIcon, title: nom})
+                .bindTooltip(nom, {permanent: false, direction: "top"});
+              groupLayer.addLayer(marker);
+              if (!window.zacMarkersByName) window.zacMarkersByName = {};
+              window.zacMarkersByName[cleanNom(nom)] = marker;
+            }
+          });
+        }
+      });
+    });
+}
 
 // Fonction utilitaire pour remplir le datalist
 // ------------------- AUTOCOMPLETE CUSTOM ZIP + ADRESSE -------------------
@@ -474,43 +507,6 @@ document.getElementById('rechercheCommune').addEventListener('input', function(e
       }
     });
   }
-  function importerZAC(csvFile, groupLayer) {
-  fetch(csvFile)
-    .then(resp => resp.text())
-    .then(csvText => {
-      Papa.parse(csvText, {
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-          results.data.forEach(function(row) {
-            var lat = parseFloat(row.Latitude || row.latitude || row.lat);
-            var lon = parseFloat(row.Longitude || row.longitude || row.lon);
-            var nom = row["Commune"] || row["Nom de la commune"] || row["commune"] || row.nom || "Commune ZAC";
-            if (!isNaN(lat) && !isNaN(lon)) {
-              // Icône bleu (Leaflet color marker)
-              var blueIcon = L.icon({
-                iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-                shadowSize: [41, 41]
-              });
-              let marker = L.marker([lat, lon], {icon: blueIcon, title: nom})
-                .bindTooltip(nom, {permanent: false, direction: "top"});
-              groupLayer.addLayer(marker);
-
-              // Ajoute la référence si tu veux l’autocomplete
-              if (!window.zacMarkersByName) window.zacMarkersByName = {};
-              window.zacMarkersByName[cleanNom(nom)] = marker;
-            }
-          });
-        }
-      });
-    });
-}
-  
-  importerZAC('communes_zac_geoloc.csv', zacCluster);
 
   // 2. Ajoute les suggestions adresses API data.gouv
   let apiDone = false;
