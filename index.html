@@ -137,8 +137,8 @@ const iconesTypeOffre = {
     // URLs d'API Sheet.best pour chaque sheet
     const API_OFFRES = "https://api.sheetbest.com/sheets/c6bdfcfd-13c2-4f7e-8b26-4fd3f0be5068";
     const API_CANDIDATURES = "https://api.sheetbest.com/sheets/fea9ad93-6045-46ef-af9d-9ed93a9f5a4c";
-    const API_LOCATIONS = "https://script.google.com/macros/s/AKfycby9l4MtfgVmRnRWuLKQh7P1-4lJgB5zdJnvL0epamuuqeP_eKpv0b2sxs2QyIKwvY6DTg/exec";
-
+const API_LOCATIONS = "https://app.nocodb.com/api/v2/tables/ml3ezzqhxcfuhpi/records";
+const API_TOKEN = "zuBtJi0p7vALQo2W_HTWzvaYRxyyQKOhRaLsrNU4";
     function showLightbox(url) {
       basicLightbox.create('<img src="' + url + '" style="max-width:90vw;max-height:90vh;">').show();
     }
@@ -262,48 +262,53 @@ var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).add
 }).addTo(map);
     chargerOffres();
     chargerLocationsExistantes();
-   function chargerLocationsExistantes() {
-  fetch(API_LOCATIONS)
-    .then(resp => resp.json())
-    .then(data => {
-      data.forEach(function(loc) {
-        if (!loc.Latitude || !loc.Longitude) return;
-        let gallery = "";
-        if (loc.Photos) {
-          let urls = loc.Photos.split(",");
-          gallery = '<div class="photo-gallery">' +
-            urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
-            '</div>';
-        }
-        var locationIcon = L.divIcon({
-          html: `<div style="
-            font-size:2em;
-            width:40px;height:40px;
-            border-radius:50%;
-            background:#fffbe7;
-            border:2px solid #ffe49c;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            box-shadow:0 1px 5px #ffd70077;
-          ">🏢</div>`,
-          className: '',
-          iconSize: [40, 40],
-          iconAnchor: [20, 40],
-          popupAnchor: [0, -40]
-        });
-        L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
-          .addTo(map)
-          .bindPopup(
-            `<b>Cabinet ou bureau à louer</b><br>
-            ${loc.Adresse || ""}<br>
-            ${loc.Description || ""}<br>
-            ${gallery}
-            <b>Contact :</b> ${loc.Contact || ""}<br>
-            ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}`
-          );
+function chargerLocationsExistantes() {
+  fetch(API_LOCATIONS, {
+    method: "GET",
+    headers: {
+      "xc-token": API_TOKEN
+    }
+  })
+  .then(resp => resp.json())
+  .then(data => {
+    (data.list || data).forEach(function(loc) {
+      if (!loc.Latitude || !loc.Longitude) return;
+      let gallery = "";
+      if (loc.Photos) {
+        let urls = loc.Photos.split(",");
+        gallery = '<div class="photo-gallery">' +
+          urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
+          '</div>';
+      }
+      var locationIcon = L.divIcon({
+        html: `<div style="
+          font-size:2em;
+          width:40px;height:40px;
+          border-radius:50%;
+          background:#fffbe7;
+          border:2px solid #ffe49c;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          box-shadow:0 1px 5px #ffd70077;
+        ">🏢</div>`,
+        className: '',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40]
       });
+      L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
+        .addTo(map)
+        .bindPopup(
+          `<b>Cabinet ou bureau à louer</b><br>
+          ${loc.Adresse || ""}<br>
+          ${loc.Description || ""}<br>
+          ${gallery}
+          <b>Contact :</b> ${loc.Contact || ""}<br>
+          ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}`
+        );
     });
+  });
 }
 // 1. Crée le layer ZIP
 var zipCluster = L.markerClusterGroup().addTo(map);
@@ -793,73 +798,64 @@ function afficherFormulaireLocation(latlng) {
   }, 200);
 
   // Soumission du formulaire location
- document.getElementById('locationForm').onsubmit = function(ev){
+document.getElementById('locationForm').onsubmit = function(ev){
   ev.preventDefault();
   var form = ev.target;
   var now = new Date();
   var datePublication = now.toISOString().slice(0, 10);
 
   var data = {
-    "Adresse": form.adresse.value,
-    "Latitude": form.lat.value,
-    "Longitude": form.lng.value,
-    "Description": form.description.value,
-    "Email": form.email.value,
-    "Contact": form.contact.value,
-    "Photos": form.photos.value,
-    "Statut": "Publiée",
+    Title: "Location via carte", // Tu peux aussi rajouter un champ input pour le titre !
+    Adresse: form.adresse.value,
+    Latitude: parseFloat(form.lat.value),
+    Longitude: parseFloat(form.lng.value),
+    Description: form.description.value,
+    Email: form.email.value,
+    Contact: form.contact.value,
+    Photos: form.photos.value,
+    Statut: "Publiée",
     "Date de publication": datePublication
   };
 
- const params = new URLSearchParams();
-Object.keys(data).forEach(key => params.append(key, data[key]));
-
-fetch(API_LOCATIONS, {
-  method: "POST",
-  body: params
-})
-  .then(response => {
-    if (response.ok) {
-      let gallery = "";
-      if (form.photos.value) {
-        let urls = form.photos.value.split(",");
-        gallery = '<div class="photo-gallery">' +
-          urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
-          '</div>';
-      }
-      var locationIcon = L.divIcon({
-        html: `<div style="
-          font-size:2em;
-          width:40px;height:40px;
-          border-radius:50%;
-          background:#fffbe7;
-          border:2px solid #ffe49c;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          box-shadow:0 1px 5px #ffd70077;
-        ">🏢</div>`,
-        className: '',
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-        popupAnchor: [0, -40]
-      });
-
-      L.marker([parseFloat(form.lat.value), parseFloat(form.lng.value)], {icon: locationIcon})
-        .addTo(map)
-        .bindPopup(
-          `<b>Cabinet ou bureau à louer</b><br>
-          ${form.adresse.value}<br>
-          ${form.description.value}<br>
-          ${gallery}
-          <b>Contact :</b> ${form.contact.value}<br>
-          ${form.email.value ? `<b>Email :</b> ${form.email.value}<br>` : ""}`
-        );
-      showCarteNotification("✅ Annonce de location ajoutée !");
-      map.closePopup();
-    } else {
-      showCarteNotification("❌ Erreur lors de l'ajout de l'annonce");
-    }
+  fetch(API_LOCATIONS, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "xc-token": API_TOKEN
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(resp => {
+    showCarteNotification("✅ Annonce de location ajoutée !");
+    // Ajoute le marker sur la carte si tu veux un retour instantané :
+    var locationIcon = L.divIcon({
+      html: `<div style="
+        font-size:2em;
+        width:40px;height:40px;
+        border-radius:50%;
+        background:#fffbe7;
+        border:2px solid #ffe49c;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        box-shadow:0 1px 5px #ffd70077;
+      ">🏢</div>`,
+      className: '',
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -40]
+    });
+    L.marker([parseFloat(form.lat.value), parseFloat(form.lng.value)], {icon: locationIcon})
+      .addTo(map)
+      .bindPopup(
+        `<b>Cabinet ou bureau à louer</b><br>
+        ${form.adresse.value}<br>
+        ${form.description.value}<br>
+        <b>Contact :</b> ${form.contact.value}<br>
+        ${form.email.value ? `<b>Email :</b> ${form.email.value}<br>` : ""}`
+      );
+    map.closePopup();
   })
   .catch(err => {
     showCarteNotification("❌ Erreur réseau : " + err);
