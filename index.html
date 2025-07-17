@@ -817,7 +817,7 @@ Object.keys(data).forEach(key => params.append(key, data[key]));
 fetch(API_LOCATIONS, {
   method: "POST",
   body: params
-});
+})
   .then(response => {
     if (response.ok) {
       let gallery = "";
