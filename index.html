@@ -272,6 +272,7 @@ function chargerLocationsExistantes() {
   .then(resp => resp.json())
   .then(data => {
     (data.list || data).forEach(function(loc) {
+      if (loc.Statut && loc.Statut.toLowerCase() === "archivée") return;
       if (!loc.Latitude || !loc.Longitude) return;
       let gallery = "";
       if (loc.Photos) {
