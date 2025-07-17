@@ -793,75 +793,77 @@ function afficherFormulaireLocation(latlng) {
   }, 200);
 
   // Soumission du formulaire location
-  document.getElementById('locationForm').onsubmit = function(ev){
-    ev.preventDefault();
-    var form = ev.target;
-    var now = new Date();
-    var datePublication = now.toISOString().slice(0, 10);
+ document.getElementById('locationForm').onsubmit = function(ev){
+  ev.preventDefault();
+  var form = ev.target;
+  var now = new Date();
+  var datePublication = now.toISOString().slice(0, 10);
 
-    var data = {
-      "Adresse": form.adresse.value,
-      "Latitude": form.lat.value,
-      "Longitude": form.lng.value,
-      "Description": form.description.value,
-      "Email": form.email.value,
-      "Contact": form.contact.value,
-      "Photos": form.photos.value,
-      "Statut": "Publiée",
-      "Date de publication": datePublication
-    };
-
-fetch(API_LOCATIONS, {
-  method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    })
-    .then(response => {
-      if (response.ok) {
-        // Affiche un marker avec galerie photo cliquable
-        let gallery = "";
-        if (form.photos.value) {
-          let urls = form.photos.value.split(",");
-          gallery = '<div class="photo-gallery">' +
-            urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
-            '</div>';
-        }
-      // Crée une icône emoji "immeuble"
-var locationIcon = L.divIcon({
-  html: `<div style="
-    font-size:2em;
-    width:40px;height:40px;
-    border-radius:50%;
-    background:#fffbe7;
-    border:2px solid #ffe49c;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 1px 5px #ffd70077;
-  ">🏢</div>`,
-  className: '',
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-  popupAnchor: [0, -40]
-});
-
-L.marker([form.lat.value, form.lng.value], {icon: locationIcon})
-  .addTo(map)
-  .bindPopup(
-    `<b>Cabinet ou bureau à louer</b><br>
-    ${form.adresse.value}<br>
-    ${form.description.value}<br>
-    ${gallery}
-    <b>Contact :</b> ${form.contact.value}<br>
-    ${form.email.value ? `<b>Email :</b> ${form.email.value}<br>` : ""}`
-  );
-        map.closePopup();
-        showCarteNotification("✅ Annonce de location ajoutée !");
-      } else {
-        showCarteNotification("❌ Erreur lors de l'ajout de l'annonce");
-      }
-    });
+  var data = {
+    "Adresse": form.adresse.value,
+    "Latitude": form.lat.value,
+    "Longitude": form.lng.value,
+    "Description": form.description.value,
+    "Email": form.email.value,
+    "Contact": form.contact.value,
+    "Photos": form.photos.value,
+    "Statut": "Publiée",
+    "Date de publication": datePublication
   };
+
+  fetch(API_LOCATIONS, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(response => {
+    if (response.ok) {
+      let gallery = "";
+      if (form.photos.value) {
+        let urls = form.photos.value.split(",");
+        gallery = '<div class="photo-gallery">' +
+          urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
+          '</div>';
+      }
+      var locationIcon = L.divIcon({
+        html: `<div style="
+          font-size:2em;
+          width:40px;height:40px;
+          border-radius:50%;
+          background:#fffbe7;
+          border:2px solid #ffe49c;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          box-shadow:0 1px 5px #ffd70077;
+        ">🏢</div>`,
+        className: '',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40]
+      });
+
+      L.marker([parseFloat(form.lat.value), parseFloat(form.lng.value)], {icon: locationIcon})
+        .addTo(map)
+        .bindPopup(
+          `<b>Cabinet ou bureau à louer</b><br>
+          ${form.adresse.value}<br>
+          ${form.description.value}<br>
+          ${gallery}
+          <b>Contact :</b> ${form.contact.value}<br>
+          ${form.email.value ? `<b>Email :</b> ${form.email.value}<br>` : ""}`
+        );
+      showCarteNotification("✅ Annonce de location ajoutée !");
+      map.closePopup();
+    } else {
+      showCarteNotification("❌ Erreur lors de l'ajout de l'annonce");
+    }
+  })
+  .catch(err => {
+    showCarteNotification("❌ Erreur réseau : " + err);
+    console.error("Erreur réseau : ", err);
+  });
+};
 }
 map.on('click', function(e) {
   var latlng = e.latlng;
