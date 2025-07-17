@@ -454,6 +454,7 @@ importerZRR('communes_zrr_geo.csv', zrrCluster);
 importerGOLD('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/refs/heads/main/communes_gold_geo.csv', goldCluster);
     
    function importerZAC(csvFile, groupLayer) {
+     console.log("Appel importerZAC avec le fichier :", csvFile);
   fetch(csvFile)
     .then(resp => resp.text())
     .then(csvText => {
