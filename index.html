@@ -298,16 +298,24 @@ function chargerLocationsExistantes() {
         iconAnchor: [20, 40],
         popupAnchor: [0, -40]
       });
-      L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
-        .addTo(map)
-        .bindPopup(
-          `<b>Cabinet ou bureau à louer</b><br>
-          ${loc.Adresse || ""}<br>
-          ${loc.Description || ""}<br>
-          ${gallery}
-          <b>Contact :</b> ${loc.Contact || ""}<br>
-          ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}`
-        );
+    L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
+  .addTo(map)
+  .bindPopup(
+    `<b>Cabinet ou bureau à louer</b><br>
+    ${loc.Adresse || ""}<br>
+    ${loc.Description || ""}<br>
+    ${gallery}
+    <b>Contact :</b> ${loc.Contact || ""}<br>
+    ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
+    <button type="button" class="btn-interesse-location"
+      data-email="${loc.Email || ""}"
+      data-contact="${loc.Contact || ""}"
+      data-adresse="${loc.Adresse || ""}"
+      data-description="${loc.Description || ""}"
+      style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;margin-bottom:4px;">
+      Ça m'intéresse&nbsp;!
+    </button>`
+  );
     });
   });
 }
@@ -987,6 +995,75 @@ map.on('click', function(e) {
         });
       }
     });
+    // ----- INTÉRÊT POUR LOCATION -----
+document.body.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('btn-interesse-location')) {
+    let btn = e.target;
+    let popupForm = `
+      <b>Je suis intéressé(e) par ce local</b><br>
+      Votre nom :<br><input type="text" id="interesseNom"><br>
+      Votre email :<br><input type="email" id="interesseEmail"><br>
+      Message :<br><textarea id="interesseMsg"></textarea><br>
+      <button type="button" id="sendInteresseLocation"
+        data-email="${btn.getAttribute('data-email') || ""}"
+        data-contact="${btn.getAttribute('data-contact') || ""}"
+        data-adresse="${btn.getAttribute('data-adresse') || ""}"
+        data-description="${btn.getAttribute('data-description') || ""}"
+        style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;">
+        Envoyer ma demande
+      </button>
+      <button type="button" id="cancelInteresseLocation" style="margin-left:8px;">Annuler</button>
+    `;
+    let popupContent = btn.closest('.leaflet-popup-content');
+    if (popupContent) popupContent.innerHTML = popupForm;
+    setTimeout(() => {
+      let btnCancel = document.getElementById('cancelInteresseLocation');
+      if (btnCancel) btnCancel.onclick = function() {
+        let popup = btn.closest('.leaflet-popup-content');
+        if (popup) window.map.closePopup();
+      };
+    }, 100);
+  }
+});
+
+document.body.addEventListener('click', function(e) {
+  if (e.target && e.target.id === "sendInteresseLocation") {
+    let nom = document.getElementById('interesseNom').value.trim();
+    let email = document.getElementById('interesseEmail').value.trim();
+    let msg = document.getElementById('interesseMsg').value.trim();
+    let now = new Date().toISOString();
+    let contact = e.target.getAttribute('data-contact') || "";
+    let emailProprio = e.target.getAttribute('data-email') || "";
+    let adresse = e.target.getAttribute('data-adresse') || "";
+    let description = e.target.getAttribute('data-description') || "";
+
+    fetch('https://app.nocodb.com/api/v2/tables/mc6pizl1vob70o/records', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "xc-token": "zuBtJi0p7vALQo2W_HTWzvaYRxyyQKOhRaLsrNU4"
+      },
+      body: JSON.stringify({
+        "Nom": nom,
+        "Email": email,
+        "Message": msg,
+        "Contact propriétaire": contact,
+        "Date": now,
+        "Adresse": adresse,
+        "Description": description
+      })
+    })
+    .then(response => {
+      if (response.ok) {
+        showCarteNotification("✅ Votre demande a été transmise !");
+        setTimeout(() => { window.map.closePopup(); }, 1100);
+      } else {
+        showCarteNotification("❌ Erreur lors de l'envoi.");
+      }
+    })
+    .catch(() => showCarteNotification("❌ Erreur réseau."));
+  }
+});
   </script>
 </body>
 </html>
