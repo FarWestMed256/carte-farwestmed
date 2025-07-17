@@ -811,11 +811,13 @@ function afficherFormulaireLocation(latlng) {
     "Date de publication": datePublication
   };
 
-  fetch(API_LOCATIONS, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  })
+ const params = new URLSearchParams();
+Object.keys(data).forEach(key => params.append(key, data[key]));
+
+fetch(API_LOCATIONS, {
+  method: "POST",
+  body: params
+});
   .then(response => {
     if (response.ok) {
       let gallery = "";
