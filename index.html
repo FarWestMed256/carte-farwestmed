@@ -1031,8 +1031,9 @@ document.body.addEventListener('click', function(e) {
     let nom = document.getElementById('interesseNom').value.trim();
     let email = document.getElementById('interesseEmail').value.trim();
     let msg = document.getElementById('interesseMsg').value.trim();
-    let contact = ""; // Remplis si tu veux un champ propriétaire, sinon laisse vide
     let now = new Date().toISOString();
+    // NOUVEAU : récupère l’email du proprio transmis via le bouton
+    let contactProprio = e.target.getAttribute("data-email") || "";
 
     fetch('https://app.nocodb.com/api/v2/tables/ml293gbtbvnhsyf/records', {
       method: "POST",
@@ -1044,7 +1045,7 @@ document.body.addEventListener('click', function(e) {
         "Nom": nom,
         "Email": email,
         "Message": msg,
-        "Contact propriétaire": contact,
+        "Contact propriétaire": contactProprio,  // <-- c’est ici la correction !
         "Date": now
       })
     })
