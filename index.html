@@ -3,14 +3,14 @@
 <head>
   <title>Carte FarwestMed</title>
   <meta charset="utf-8" />
-  <meta http-equiv="Content-Security-Policy"
+ <meta http-equiv="Content-Security-Policy"
       content="
         default-src 'self';
-        script-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com https://widget.cloudinary.com;
+        script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com https://widget.cloudinary.com https://upload-widget.cloudinary.com;
         style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://widget.cloudinary.com;
         img-src 'self' data: https://cdn.jsdelivr.net https://res.cloudinary.com https://unpkg.com https://lh3.googleusercontent.com;
-        frame-src https://www.google.com https://widget.cloudinary.com;
-        connect-src 'self' https://api.sheetbest.com https://app.nocodb.com https://api-adresse.data.gouv.fr https://res.cloudinary.com https://widget.cloudinary.com https://www.google.com https://www.gstatic.com;
+        frame-src https://www.google.com https://widget.cloudinary.com https://upload-widget.cloudinary.com;
+        connect-src 'self' https://api.sheetbest.com https://app.nocodb.com https://api-adresse.data.gouv.fr https://res.cloudinary.com https://widget.cloudinary.com https://upload-widget.cloudinary.com https://www.google.com https://www.gstatic.com;
         font-src 'self' https://cdn.jsdelivr.net;
         object-src 'none';
         base-uri 'self';
