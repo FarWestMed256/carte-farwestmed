@@ -113,6 +113,19 @@
 </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <script>
+    function canSubmit(formKey, limit = 5, delayMin = 60) {
+  const now = Date.now();
+  let logs = [];
+  try {
+    logs = JSON.parse(localStorage.getItem(formKey) || "[]");
+  } catch (e) { logs = []; }
+  // Garde seulement les entrées des X dernières minutes
+  const recent = logs.filter(t => now - t < delayMin * 60 * 1000);
+  if (recent.length >= limit) return false;
+  recent.push(now);
+  localStorage.setItem(formKey, JSON.stringify(recent));
+  return true;
+}
     function showCarteNotification(msg, timeout = 2500) {
   let notif = document.createElement('div');
   notif.textContent = msg;
@@ -768,6 +781,10 @@ Longitude :<br><input type="text" name="lng" value="${latlng.lng}" readonly><br>
 
       document.getElementById('offreForm').onsubmit = function(ev){
         ev.preventDefault();
+        if (!canSubmit("offreForm", 5, 60)) {
+  showCarteNotification("⚠️ Trop de publications d’offres depuis ce navigateur ! Réessaye dans une heure.");
+  return;
+}
                 let recaptchaResponse = grecaptcha.getResponse();
 if (!recaptchaResponse) {
   showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
@@ -901,6 +918,10 @@ function afficherFormulaireLocation(latlng) {
   // Soumission du formulaire location
 document.getElementById('locationForm').onsubmit = function(ev){
   ev.preventDefault();
+  if (!canSubmit("locationForm", 5, 60)) {
+    showCarteNotification("⚠️ Trop de demandes pour ce poste depuis ce navigateur ! Réessaye dans une heure.");
+    return;
+     }
   let recaptchaResponse = grecaptcha.getResponse();
 if (!recaptchaResponse) {
   showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
@@ -1009,10 +1030,14 @@ map.on('click', function(e) {
     document.body.addEventListener('click', function(e) {
       if (e.target && e.target.id === "sendCandidature") {
            let recaptchaResponse = grecaptcha.getResponse();
-    if (!recaptchaResponse) {
-      showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
-      return;
-    }
+   if (!recaptchaResponse) {
+  showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
+  return;
+}
+if (!canSubmit("candidatureForm", 5, 60)) {
+  showCarteNotification("⚠️ Trop de candidatures envoyées depuis ce navigateur ! Réessaye dans une heure.");
+  return;
+}
     if (e.target.disabled) return;
     e.target.disabled = true;
 
@@ -1104,6 +1129,10 @@ document.body.addEventListener('click', function(e) {
       showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
       return;
     }
+    if (!canSubmit("interetLocationForm", 5, 60)) {
+  showCarteNotification("⚠️ Trop de demandes envoyées depuis ce navigateur ! Réessaye dans une heure.");
+  return;
+}
     let nom = document.getElementById('interesseNom').value.trim();
     let email = document.getElementById('interesseEmail').value.trim();
     let msg = document.getElementById('interesseMsg').value.trim();
