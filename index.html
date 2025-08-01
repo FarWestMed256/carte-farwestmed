@@ -1069,14 +1069,18 @@ map.on('click', function(e) {
     `;
     let popupContent = btn.closest('.leaflet-popup-content');
     if (popupContent) popupContent.innerHTML = popupForm;
-    setTimeout(() => {
-      let btnCancel = document.getElementById('cancelInteresseLocation');
-      if (btnCancel) btnCancel.onclick = function() {
-        let popup = btn.closest('.leaflet-popup-content');
-        if (popup) window.map.closePopup();
-        grecaptcha.reset();
-      };
-    }, 100);
+   setTimeout(() => {
+  let btnCancel = document.getElementById('cancelInteresseLocation');
+  if (btnCancel) btnCancel.onclick = function() {
+    let popup = btn.closest('.leaflet-popup-content');
+    if (popup) window.map.closePopup();
+    grecaptcha.reset();
+  };
+  // ⬇️ AJOUTE CE BLOC : 
+  if (window.grecaptcha && document.querySelector('#interesseNom') && document.querySelector('.g-recaptcha')) {
+    grecaptcha.render(document.querySelector('.g-recaptcha'));
+  }
+}, 100);
   }
 });
 
