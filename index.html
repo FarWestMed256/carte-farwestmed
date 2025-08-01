@@ -162,30 +162,31 @@ const API_TOKEN = "zuBtJi0p7vALQo2W_HTWzvaYRxyyQKOhRaLsrNU4";
     }
     window.showLightbox = showLightbox;
 
-    function openPostulerForm(email, contact, marker, offreTitle) {
-      setTimeout(function() {
-        var popupForm = 
-          '<b>Postuler à cette offre</b><br>'+
-          'Votre nom :<br><input type="text" id="candidatNom"><br>'+
-          'Votre email :<br><input type="email" id="candidatEmail"><br>'+
-          'Message :<br><textarea id="candidatMsg"></textarea><br>'+
-          '<div class="g-recaptcha" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div>'+
-          '<button type="button" id="sendCandidature" '+
-          'style="background:#f9d875;color:#4b3c10;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:6px;" '+
-          'data-email="' + (email || '') + '" data-contact="' + (contact || '') + '" data-offretitle="' + (offreTitle || '') + '">Envoyer</button>'+
-          '<button type="button" id="cancelCandidature" style="margin-left:8px;">Annuler</button>';
-        marker.setPopupContent(popupForm);
+function openPostulerForm(email, contact, marker, offreTitle) {
+  setTimeout(function() {
+    var popupForm = 
+      '<b>Postuler à cette offre</b><br>'+
+      'Votre nom :<br><input type="text" id="candidatNom"><br>'+
+      'Votre email :<br><input type="email" id="candidatEmail"><br>'+
+      'Message :<br><textarea id="candidatMsg"></textarea><br>'+
+      '<div class="g-recaptcha" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div>'+
+      '<button type="button" id="sendCandidature" '+
+      'style="background:#f9d875;color:#4b3c10;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:6px;" '+
+      'data-email="' + (email || '') + '" data-contact="' + (contact || '') + '" data-offretitle="' + (offreTitle || '') + '">Envoyer</button>'+
+      '<button type="button" id="cancelCandidature" style="margin-left:8px;">Annuler</button>';
+    marker.setPopupContent(popupForm);
 
-       setTimeout(function() {
-  var btnCancel = document.getElementById('cancelCandidature');
-  if (btnCancel) btnCancel.onclick = function() {
-    // Ferme le popup de Leaflet
-    window.map.closePopup();
-    // Réinitialise le reCAPTCHA
-    if (window.grecaptcha) grecaptcha.reset();
-  };
-}, 100);
-}
+    setTimeout(function() {
+      var btnCancel = document.getElementById('cancelCandidature');
+      if (btnCancel) btnCancel.onclick = function() {
+        // Ferme le popup de Leaflet
+        window.map.closePopup();
+        // Réinitialise le reCAPTCHA
+        if (window.grecaptcha) grecaptcha.reset();
+      };
+    }, 100);
+  }, 100);  // <-- FERMETURE ICI !
+} // <-- IL FALLAIT CETTE ACCOLADE !
 
     function chargerOffres() {
       fetch(API_OFFRES)
