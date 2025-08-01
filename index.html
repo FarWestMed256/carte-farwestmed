@@ -164,29 +164,30 @@ const API_TOKEN = "zuBtJi0p7vALQo2W_HTWzvaYRxyyQKOhRaLsrNU4";
 
 function openPostulerForm(email, contact, marker, offreTitle) {
   setTimeout(function() {
-    var popupForm = 
+    var popupForm =
       '<b>Postuler à cette offre</b><br>'+
       'Votre nom :<br><input type="text" id="candidatNom"><br>'+
       'Votre email :<br><input type="email" id="candidatEmail"><br>'+
       'Message :<br><textarea id="candidatMsg"></textarea><br>'+
       '<div class="g-recaptcha" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div>'+
-      '<button type="button" id="sendCandidature" '+
-      'style="background:#f9d875;color:#4b3c10;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:6px;" '+
-      'data-email="' + (email || '') + '" data-contact="' + (contact || '') + '" data-offretitle="' + (offreTitle || '') + '">Envoyer</button>'+
+      '<button type="button" id="sendCandidature" ...>Envoyer</button>'+
       '<button type="button" id="cancelCandidature" style="margin-left:8px;">Annuler</button>';
     marker.setPopupContent(popupForm);
 
     setTimeout(function() {
       var btnCancel = document.getElementById('cancelCandidature');
       if (btnCancel) btnCancel.onclick = function() {
-        // Ferme le popup de Leaflet
         window.map.closePopup();
-        // Réinitialise le reCAPTCHA
         if (window.grecaptcha) grecaptcha.reset();
       };
-    }, 100);
-  }, 100);  // <-- FERMETURE ICI !
-} // <-- IL FALLAIT CETTE ACCOLADE !
+
+      // AJOUTE CE BLOC :
+      if (window.grecaptcha && document.querySelector('#candidatNom') && document.querySelector('.g-recaptcha')) {
+        grecaptcha.render(document.querySelector('.g-recaptcha'));
+      }
+    }, 200);
+  }, 100);
+}
 
     function chargerOffres() {
       fetch(API_OFFRES)
@@ -715,38 +716,42 @@ Longitude :<br><input type="text" name="lng" value="${latlng.lng}" readonly><br>
         .setContent(popupContent)
         .openOn(map);
 
-      setTimeout(function() {
-        var cloudName = 'damdqxu7t';
-        var uploadBtn = document.getElementById('cloudinaryBtn');
-        var urlField = document.getElementById('photoURL');
-        if (uploadBtn) {
-          uploadBtn.onclick = function() {
-            cloudinary.openUploadWidget(
-              {
-                cloudName: cloudName,
-                uploadPreset: 'fwmed_unsigned',
-                sources: ['local', 'url', 'camera'],
-                multiple: true,
-                folder: 'offres-farwestmed',
-                cropping: false,
-                resourceType: 'image',
-                maxFileSize: 10485760 // 10MB
-              },
-              function(error, result) {
-                if (!error && result && result.event === "success") {
-                  let urls = urlField.value ? urlField.value.split(",") : [];
-                  if (result.info.files && Array.isArray(result.info.files)) {
-                    urls = urls.concat(result.info.files.map(f => f.uploadInfo.secure_url));
-                  } else if (result.info.secure_url) {
-                    urls.push(result.info.secure_url);
-                  }
-                  urlField.value = urls.join(",");
-                }
-              }
-            );
+     setTimeout(function() {
+  var cloudName = 'damdqxu7t';
+  var uploadBtn = document.getElementById('cloudinaryBtn');
+  var urlField = document.getElementById('photoURL');
+  if (uploadBtn) {
+    uploadBtn.onclick = function() {
+      cloudinary.openUploadWidget(
+        {
+          cloudName: cloudName,
+          uploadPreset: 'fwmed_unsigned',
+          sources: ['local', 'url', 'camera'],
+          multiple: true,
+          folder: 'offres-farwestmed',
+          cropping: false,
+          resourceType: 'image',
+          maxFileSize: 10485760 // 10MB
+        },
+        function(error, result) {
+          if (!error && result && result.event === "success") {
+            let urls = urlField.value ? urlField.value.split(",") : [];
+            if (result.info.files && Array.isArray(result.info.files)) {
+              urls = urls.concat(result.info.files.map(f => f.uploadInfo.secure_url));
+            } else if (result.info.secure_url) {
+              urls.push(result.info.secure_url);
+            }
+            urlField.value = urls.join(",");
           }
         }
-      }, 400);
+      );
+    }
+  }
+  // ⬇️ AJOUTE ÇA JUSTE APRÈS LA CONFIG CLOUDINARY :
+  if (window.grecaptcha && document.querySelector('#offreForm .g-recaptcha')) {
+    grecaptcha.render(document.querySelector('#offreForm .g-recaptcha'));
+  }
+}, 400);
 
       document.getElementById('offreForm').onsubmit = function(ev){
         ev.preventDefault();
@@ -843,39 +848,43 @@ function afficherFormulaireLocation(latlng) {
     .openOn(map);
 
   // Gestion Cloudinary pour photos
-  setTimeout(function() {
-    var cloudName = 'damdqxu7t';
-    var uploadBtn = document.getElementById('cloudinaryBtnLocation');
-    var urlField = document.getElementById('locationPhotoURL');
-    if (uploadBtn) {
-      uploadBtn.onclick = function() {
-        cloudinary.openUploadWidget(
-          {
-            cloudName: cloudName,
-            uploadPreset: 'fwmed_unsigned',
-            sources: ['local', 'url', 'camera'],
-            multiple: true,
-            folder: 'locations-farwestmed',
-            cropping: false,
-            resourceType: 'image',
-            maxFileSize: 10485760 // 10MB
-          },
-          function(error, result) {
-            if (!error && result && result.event === "success") {
-              let urls = urlField.value ? urlField.value.split(",") : [];
-              if (result.info.files && Array.isArray(result.info.files)) {
-                urls = urls.concat(result.info.files.map(f => f.uploadInfo.secure_url));
-              } else if (result.info.secure_url) {
-                urls.push(result.info.secure_url);
-              }
-              urlField.value = urls.join(",");
+ setTimeout(function() {
+  var cloudName = 'damdqxu7t';
+  var uploadBtn = document.getElementById('cloudinaryBtnLocation');
+  var urlField = document.getElementById('locationPhotoURL');
+  if (uploadBtn) {
+    uploadBtn.onclick = function() {
+      cloudinary.openUploadWidget(
+        {
+          cloudName: cloudName,
+          uploadPreset: 'fwmed_unsigned',
+          sources: ['local', 'url', 'camera'],
+          multiple: true,
+          folder: 'locations-farwestmed',
+          cropping: false,
+          resourceType: 'image',
+          maxFileSize: 10485760 // 10MB
+        },
+        function(error, result) {
+          if (!error && result && result.event === "success") {
+            let urls = urlField.value ? urlField.value.split(",") : [];
+            if (result.info.files && Array.isArray(result.info.files)) {
+              urls = urls.concat(result.info.files.map(f => f.uploadInfo.secure_url));
+            } else if (result.info.secure_url) {
+              urls.push(result.info.secure_url);
             }
+            urlField.value = urls.join(",");
           }
-        );
-      }
+        }
+      );
     }
-  }, 200);
+  }
 
+  // <-- C'est ici, à l'intérieur du setTimeout !
+  if (window.grecaptcha && document.querySelector('#locationForm .g-recaptcha')) {
+    grecaptcha.render(document.querySelector('#locationForm .g-recaptcha'));
+  }
+}, 200);
   // Soumission du formulaire location
 document.getElementById('locationForm').onsubmit = function(ev){
   ev.preventDefault();
