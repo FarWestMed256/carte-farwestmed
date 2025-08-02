@@ -118,7 +118,6 @@
 .sidebar-toggle {
   position: fixed;
   top: 48%;
-  right: calc(30vw - 40px); /* Collé au bord de la sidebar, s’adapte à la largeur ! */
   transform: translateY(-50%);
   width: 44px; height: 60px;
   background: #ffeb92;
@@ -134,10 +133,16 @@
   transition: right 0.3s, background 0.2s;
   outline: none;
 }
+#sidebar-mode-emploi.open .sidebar-toggle {
+  right: 30vw;
+}
 @media (max-width: 900px) {
-  .sidebar-toggle {
-    right: calc(80vw - 40px); /* s’adapte à la largeur mobile */
+  #sidebar-mode-emploi.open .sidebar-toggle {
+    right: 80vw;
   }
+}
+#sidebar-mode-emploi.closed .sidebar-toggle {
+  right: 0;
 }
 .sidebar-toggle:hover {
   background: #ffefbc;
