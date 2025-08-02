@@ -135,7 +135,7 @@
   style="position: absolute; top: 120px; left: 40px; z-index: 1000; padding:8px; width:320px; border-radius:10px; border:1px solid #ccc; font-size:1em;">
 <div id="autocomplete-list" style="position:absolute;top:160px;left:40px;z-index:1200;width:320px;"></div>
 <div id="map"></div>
-  <div id="sidebar-mode-emploi" class="sidebar closed">
+  <div id="sidebar-mode-emploi" class="sidebar open">
   <div class="sidebar-toggle" onclick="toggleSidebar()">
     <span id="toggle-arrow">&#9664;</span>
   </div>
@@ -409,7 +409,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 map.whenReady(function() {
   setTimeout(function() {
     var size = map.getSize();
-    map.panBy([size.x * 0.3, 0], { animate: false });  // 30% de la largeur vers la droite (décale le centre à gauche)
+    map.panBy([size.x * 0.18, 0], { animate: false });  // 30% de la largeur vers la droite (décale le centre à gauche)
   }, 400); // petit délai pour être sûr que tout est chargé
 });
     chargerOffres();
