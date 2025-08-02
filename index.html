@@ -88,7 +88,8 @@
     }
     #sidebar-mode-emploi {
   position: fixed;
-  top: 0; right: 0;
+  top: 0; 
+  right: 0;
   height: 100vh;
   width: 0;
   max-width: 440px;
@@ -100,6 +101,14 @@
   transition: width 0.33s cubic-bezier(.83,.1,.5,1.4), min-width 0.33s;
   border-left: 2px solid #ffe49c;
   backdrop-filter: blur(2px);
+}
+    #sidebar-mode-emploi.open {
+  box-shadow: -4px 0 28px #3332;
+  /* Décale la sidebar de la largeur du bouton (48px) pour ne pas recouvrir le bouton */
+  right: 0;
+}
+#sidebar-mode-emploi.closed {
+  right: -30vw; /* ou -80vw sur mobile si tu veux la faire sortir totalement */
 }
 
 #sidebar-mode-emploi.open {
@@ -117,29 +126,32 @@
 
 .sidebar-toggle {
   position: fixed;
-  top: 48%;
+  top: 50%;
+  left: 0;
   transform: translateY(-50%);
-  width: 44px; height: 60px;
-  background: #ffeb92;
-  color: #7a6200;
-  border: 2px solid #efc70e;
+  width: 48px;
+  height: 64px;
+  background: linear-gradient(90deg, #ffe97a 80%, #f6f0cf 100%);
+  color: #9a8700;
+  border: none;
+  box-shadow: 1px 1px 18px #b9a22b25;
+  border-radius: 0 18px 18px 0;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 25px 0 0 25px;
-  box-shadow: -2px 2px 16px #c7b248a3;
   cursor: pointer;
-  font-size: 2em;
-  z-index: 4200;
-  opacity: 0.98;
-  transition: right 0.3s, background 0.2s;
+  z-index: 5000;
+  transition: background 0.18s, color 0.18s, box-shadow 0.2s, left 0.3s;
+  font-size: 2.2em;
   outline: none;
+  border: 2px solid #efd600a6;
 }
-#sidebar-mode-emploi.open .sidebar-toggle {
-  right: 30vw;
+.sidebar-toggle:hover {
+  background: linear-gradient(90deg, #fff8cf 85%, #fffbe7 100%);
+  color: #b9a22b;
+  box-shadow: 1px 4px 22px #ffe97a55;
 }
+#toggle-arrow { transition: transform 0.2s; }
 @media (max-width: 900px) {
-  #sidebar-mode-emploi.open .sidebar-toggle {
-    right: 80vw;
-  }
+  .sidebar-toggle { width: 40px; height: 52px; font-size: 2em; }
 }
 #sidebar-mode-emploi.closed .sidebar-toggle {
   right: 0;
@@ -174,10 +186,10 @@
   style="position: absolute; top: 120px; left: 40px; z-index: 1000; padding:8px; width:320px; border-radius:10px; border:1px solid #ccc; font-size:1em;">
 <div id="autocomplete-list" style="position:absolute;top:160px;left:40px;z-index:1200;width:320px;"></div>
 <div id="map"></div>
-  <div id="sidebar-mode-emploi" class="sidebar open">
-  <button class="sidebar-toggle" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Afficher/masquer le mode d'emploi">
+   <button class="sidebar-toggle" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Afficher/masquer le mode d'emploi">
   <span id="toggle-arrow">&#9664;</span>
 </button>
+  <div id="sidebar-mode-emploi" class="sidebar open">
   <div class="sidebar-content">
     <h3>🗺️ Mode d’emploi de la carte</h3>
     <ul style="list-style:none;padding:0;">
