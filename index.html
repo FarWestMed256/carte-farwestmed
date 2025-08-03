@@ -481,10 +481,15 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // Décalage du centre vers la gauche (pour sidebar à droite)
 map.whenReady(function() {
-  setTimeout(function() {
-    var size = map.getSize();
-    map.panBy([size.x * 0.18, 0], { animate: false });  // 30% de la largeur vers la droite (décale le centre à gauche)
-  }, 400); // petit délai pour être sûr que tout est chargé
+  const urlParams = new URLSearchParams(window.location.search);
+  const lat = parseFloat(urlParams.get('lat'));
+  const lng = parseFloat(urlParams.get('lng'));
+  if (isNaN(lat) || isNaN(lng)) {
+    setTimeout(function() {
+      var size = map.getSize();
+      map.panBy([size.x * 0.18, 0], { animate: false });  // 30% de la largeur vers la droite (décale le centre à gauche)
+    }, 400); // petit délai pour être sûr que tout est chargé
+  }
 });
     chargerOffres();
     chargerLocationsExistantes();
