@@ -455,30 +455,34 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
-    (function() {
-  function getURLParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
-  const lat = parseFloat(getURLParam('lat'));
-  const lng = parseFloat(getURLParam('lng'));
+ map.whenReady(function() {
+  // Récupère lat/lng de l’URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const lat = parseFloat(urlParams.get('lat'));
+  const lng = parseFloat(urlParams.get('lng'));
+
   if (!isNaN(lat) && !isNaN(lng)) {
-    map.whenReady(function() {
-      map.setView([lat, lng], 15, { animate: true });
-      L.marker([lat, lng], {
-        icon: L.icon({
-          iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-          shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
-        })
-      }).addTo(map)
-      .bindPopup("👉 Offre ici").openPopup();
-    });
+    map.setView([lat, lng], 15, { animate: true });
+    const m = L.marker([lat, lng], {
+      icon: L.icon({
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      })
+    }).addTo(map)
+    .bindPopup("👉 Offre ici").openPopup();
+    setTimeout(() => map.removeLayer(m), 12000);
+  } else {
+    // Décalage par défaut si pas de lat/lng dans l’URL
+    setTimeout(function() {
+      var size = map.getSize();
+      map.panBy([size.x * 0.18, 0], { animate: false });
+    }, 400);
   }
-})();
+});
 
 // Décalage du centre vers la gauche (pour sidebar à droite)
 map.whenReady(function() {
