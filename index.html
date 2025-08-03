@@ -455,14 +455,15 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
- map.whenReady(function() {
+map.whenReady(function() {
   const urlParams = new URLSearchParams(window.location.search);
   const lat = parseFloat(urlParams.get('lat'));
   const lng = parseFloat(urlParams.get('lng'));
+  const zoom = parseInt(urlParams.get('zoom')) || 15; // Ajouté !
+
   if (!isNaN(lat) && !isNaN(lng)) {
-    // On attend 500ms pour être 100% sûr
     setTimeout(function() {
-      map.setView([lat, lng], 15, { animate: true });
+      map.setView([lat, lng], zoom, { animate: true });
       const m = L.marker([lat, lng], {
         icon: L.icon({
           iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
