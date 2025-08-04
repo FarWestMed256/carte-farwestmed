@@ -184,6 +184,17 @@
 .leaflet-control {
   z-index: 3000 !important;
 }
+    .leaflet-popup,
+  .leaflet-popup-pane,
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-content,
+  .leaflet-container .leaflet-popup {
+    z-index: 99999 !important;
+  }
+
+  .leaflet-top, .leaflet-bottom, .leaflet-control {
+    z-index: 2020 !important;
+  }
   </style>
 </head>
 <body>
