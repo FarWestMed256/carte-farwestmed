@@ -310,6 +310,14 @@
     .toLowerCase()
     .replace(/[\s'-]/g,"");
 }
+    function forceLineBreaksAfterDot(str) {
+  if (!str) return '';
+  // Ajoute <br> après chaque point suivi d'un espace (optionnel), SAUF si :
+  // - précédé d'un chiffre (numéro)
+  // - précédé d'un @ (mail)
+  // - suivi de com/fr/org/net/gov/edu (mail/url)
+  return str.replace(/([^0-9@])\. ?(?!((com|fr|org|net|gov|edu)\b))/gi, '$1.<br>');
+}
     // Mapping type d'offre → URL d’icône
 const iconesTypeOffre = {
   "Médecin généraliste": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/doctor.svg",
@@ -390,8 +398,8 @@ function openPostulerForm(email, contact, marker, offreTitle) {
               `<b>${offre["Titre de l’offre"] || ''}</b><br>
               ${offre["Nom de la struct"] || ''}<br>
               ${offre["Adresse"] || ''}<br>
-              ${offre["Description"] || ''}<br>
-              ${gallery}
+${forceLineBreaksAfterDot(offre["Description"] || '')}<br>
+${gallery}
               <b>Contact :</b> ${offre["Contact"] || ''}<br>
               ${offre["Adresse Email"] ? `<b>Email :</b> ${offre["Adresse Email"]}<br>` : ""}
               <button type="button" class="btn-postuler" id="${postulerId}"
@@ -548,7 +556,7 @@ function chargerLocationsExistantes() {
   .bindPopup(
     `<b>Cabinet ou bureau à louer</b><br>
     ${loc.Adresse || ""}<br>
-    ${loc.Description || ""}<br>
+    ${forceLineBreaksAfterDot(loc.Description || '')}<br>
     ${gallery}
     <b>Contact :</b> ${loc.Contact || ""}<br>
     ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
