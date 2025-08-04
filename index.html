@@ -175,26 +175,28 @@
 #sidebar-mode-emploi.closed .sidebar-content { display: none;}
 #toggle-arrow { transition: transform 0.2s; }
 #sidebar-mode-emploi.open #toggle-arrow { transform: rotate(180deg); }
-    .leaflet-popup {
-  z-index: 50000 !important;
+    /* Pour forcer les popups devant tout le reste */
+.leaflet-popup,
+.leaflet-popup-pane,
+.leaflet-container .leaflet-popup,
+.leaflet-container .leaflet-popup-content-wrapper,
+.leaflet-container .leaflet-popup-content {
+  z-index: 12000 !important;
 }
-.leaflet-popup-pane {
-  z-index: 50000 !important;
-}
-.leaflet-control {
-  z-index: 3000 !important;
-}
-    .leaflet-popup,
-  .leaflet-popup-pane,
-  .leaflet-popup-content-wrapper,
-  .leaflet-popup-content,
-  .leaflet-container .leaflet-popup {
-    z-index: 99999 !important;
-  }
 
-  .leaflet-top, .leaflet-bottom, .leaflet-control {
-    z-index: 2020 !important;
-  }
+/* Place les contrôles et la barre de recherche en-dessous du popup */
+.leaflet-top, .leaflet-bottom, .leaflet-control,
+#rechercheCommune {
+  z-index: 9000 !important;
+  /* Tu peux aussi ajouter une transition pour l’opacité si tu veux la faire varier */
+  transition: opacity 0.15s;
+}
+#autocomplete-list {
+  z-index: 9000 !important;
+}
+.sidebar-toggle {
+  z-index: 8900 !important;
+}
   </style>
 </head>
 <body>
@@ -203,8 +205,8 @@
   type="text"
   autocomplete="off"
   placeholder="Rechercher une commune ZIP ou une adresse..."
-  style="position: absolute; top: 120px; left: 0px; z-index: 1000; padding:8px; width:320px; border-radius:10px; border:1px solid #ccc; font-size:1em;">
-<div id="autocomplete-list" style="position:absolute;top:160px;left:0px;z-index:1200;width:320px;"></div>
+  style="position: absolute; top: 120px; left: 0px; padding:8px; width:320px; border-radius:10px; border:1px solid #ccc; font-size:1em;">
+  <div id="autocomplete-list" style="position:absolute;top:160px;left:0px;z-index:1200;width:320px;"></div>
 <div id="map"></div>
    <button class="sidebar-toggle" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Afficher/masquer le mode d'emploi">
   <span id="toggle-arrow">&#9664;</span>
