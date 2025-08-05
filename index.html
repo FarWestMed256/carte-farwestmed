@@ -197,18 +197,52 @@
 .sidebar-toggle {
   z-index: 8900 !important;
 }
+  /* ======= Barre de recherche sur la carte ======= */
+    #recherche-bar {
+      position: absolute;
+      top: 24px;
+      left: 0;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      pointer-events: none; /* pour que seule la barre réponde aux clics */
+      z-index: 12000; /* Plus haut que leaflet-popup */
+    }
+    #rechercheCommune, #autocomplete-list {
+      pointer-events: auto; /* autorise la saisie dans l'input */
+    }
+    #rechercheCommune {
+      padding: 10px 18px;
+      width: 330px;
+      border-radius: 10px;
+      border: 1.5px solid #e3e3e3;
+      font-size: 1.11em;
+      box-shadow: 0 2px 14px #f7e46a18;
+      background: #fff;
+    }
+    #autocomplete-list {
+      position: absolute;
+      top: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 12001;
+      width: 340px;
+    }
   </style>
 </head>
+  <!-- BARRE DE RECHERCHE EN-TÊTE -->
 <body>
-<div id="map" style="position:relative;"></div>
+  <div id="map"></div>
+  <div id="recherche-bar">
+    <input
+      id="rechercheCommune"
+      type="text"
+      autocomplete="off"
+      placeholder="Rechercher une commune ZIP ou une adresse..."
+    >
+    <div id="autocomplete-list"></div>
+  </div>
 <!-- Ici la carte s’arrête -->
-<input
-  id="rechercheCommune"
-  type="text"
-  autocomplete="off"
-  placeholder="Rechercher une commune ZIP ou une adresse..."
-  style="position: absolute; top: 120px; left: 0px; padding:8px; width:320px; border-radius:10px; border:1px solid #ccc; font-size:1em;">
-<div id="autocomplete-list" style="position:absolute;top:160px;left:0px;z-index:1200;width:320px;"></div>
    <button class="sidebar-toggle" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Afficher/masquer le mode d'emploi">
   <span id="toggle-arrow">&#9664;</span>
 </button>
