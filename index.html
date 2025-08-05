@@ -494,7 +494,14 @@ var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).add
     }
 
     var map = L.map('map').setView([46.7, 2.5], 6);
-window.map = map;
+window.onload = function() {
+  document.getElementById('rechercheCommune').addEventListener('mousedown', function(e) {
+    e.stopPropagation();
+  });
+  document.getElementById('autocomplete-list').addEventListener('mousedown', function(e) {
+    e.stopPropagation();
+  });
+};
     map.on('popupopen', function() {
   document.getElementById('rechercheCommune').style.visibility = 'hidden';
   document.getElementById('autocomplete-list').style.visibility = 'hidden';
