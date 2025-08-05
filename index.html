@@ -200,15 +200,15 @@
   </style>
 </head>
 <body>
-<div id="map" style="position:relative;">
-  <input
-    id="rechercheCommune"
-    type="text"
-    autocomplete="off"
-    placeholder="Rechercher une commune ZIP ou une adresse..."
-    style="position: absolute; top: 120px; left: 0px; padding:8px; width:320px; border-radius:10px; border:1px solid #ccc; font-size:1em;">
-  <div id="autocomplete-list" style="position:absolute;top:160px;left:0px;z-index:1200;width:320px;"></div>
-</div>
+<div id="map" style="position:relative;"></div>
+<!-- Ici la carte s’arrête -->
+<input
+  id="rechercheCommune"
+  type="text"
+  autocomplete="off"
+  placeholder="Rechercher une commune ZIP ou une adresse..."
+  style="position: absolute; top: 120px; left: 0px; padding:8px; width:320px; border-radius:10px; border:1px solid #ccc; font-size:1em;">
+<div id="autocomplete-list" style="position:absolute;top:160px;left:0px;z-index:1200;width:320px;"></div>
    <button class="sidebar-toggle" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Afficher/masquer le mode d'emploi">
   <span id="toggle-arrow">&#9664;</span>
 </button>
@@ -502,14 +502,6 @@ window.onload = function() {
     e.stopPropagation();
   });
 };
-    map.on('popupopen', function() {
-  document.getElementById('rechercheCommune').style.visibility = 'hidden';
-  document.getElementById('autocomplete-list').style.visibility = 'hidden';
-});
-map.on('popupclose', function() {
-  document.getElementById('rechercheCommune').style.visibility = 'visible';
-  document.getElementById('autocomplete-list').style.visibility = 'visible';
-});
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap contributors'
