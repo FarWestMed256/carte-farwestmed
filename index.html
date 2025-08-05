@@ -181,7 +181,7 @@
 .leaflet-container .leaflet-popup,
 .leaflet-container .leaflet-popup-content-wrapper,
 .leaflet-container .leaflet-popup-content {
-  z-index: 12000 !important;
+  z-index: 99999 !important;
 }
 
 /* Place les contrôles et la barre de recherche en-dessous du popup */
@@ -192,10 +192,19 @@
   transition: opacity 0.15s;
 }
 #autocomplete-list {
-  z-index: 9000 !important;
+  z-index: 1200 !important;
 }
 .sidebar-toggle {
   z-index: 8900 !important;
+}
+    #overlay-popup-blur {
+  position: fixed;
+  left:0; top:0; width:100vw; height:100vh;
+  z-index: 99990; /* juste en-dessous du popup */
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(3px);
+  pointer-events: none;
+  transition: opacity 0.2s;
 }
   </style>
 </head>
@@ -773,6 +782,13 @@ importerGOLD('https://raw.githubusercontent.com/FarWestMed256/carte-farwestmed/r
 }
 
     importerZAC('communes_zac_geoloc.csv', zacCluster);
+    // Overlay flou lors de l'ouverture d'un popup
+map.on('popupopen', function() {
+  document.getElementById('overlay-popup-blur').style.display = 'block';
+});
+map.on('popupclose', function() {
+  document.getElementById('overlay-popup-blur').style.display = 'none';
+});
 // Fonction utilitaire pour remplir le datalist
 // ------------------- AUTOCOMPLETE CUSTOM ZIP + ADRESSE -------------------
 let autocompleteIndex = -1; // pour le survol clavier
@@ -1407,6 +1423,7 @@ function toggleSidebar() {
 </script>
   
   <script src="https://www.google.com/recaptcha/api.js"></script>
+  <div id="overlay-popup-blur" style="display:none;"></div>
 </body>
 </html>
 <!-- mini commit pour forcer le déploiement -->
