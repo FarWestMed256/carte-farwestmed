@@ -182,6 +182,7 @@
 .leaflet-container .leaflet-popup-content-wrapper,
 .leaflet-container .leaflet-popup-content {
   z-index: 99999 !important;
+  padding-top: 18px;
 }
 
 /* Place les contrôles et la barre de recherche en-dessous du popup */
@@ -206,7 +207,7 @@
       display: flex;
       justify-content: center;
       pointer-events: none; /* pour que seule la barre réponde aux clics */
-      z-index: 12000; /* Plus haut que leaflet-popup */
+      z-index: 9000; /* Plus haut que leaflet-popup */
     }
     #rechercheCommune, #autocomplete-list {
       pointer-events: auto; /* autorise la saisie dans l'input */
@@ -225,14 +226,14 @@
       top: 48px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 12001;
+      z-index: 9001;
       width: 340px;
     }
   </style>
 </head>
   <!-- BARRE DE RECHERCHE EN-TÊTE -->
 <body>
-  <div id="map"></div>
+<div id="map" style="position:relative;">
   <div id="recherche-bar">
     <input
       id="rechercheCommune"
@@ -242,6 +243,7 @@
     >
     <div id="autocomplete-list"></div>
   </div>
+</div>
 <!-- Ici la carte s’arrête -->
    <button class="sidebar-toggle" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Afficher/masquer le mode d'emploi">
   <span id="toggle-arrow">&#9664;</span>
