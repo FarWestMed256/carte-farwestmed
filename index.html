@@ -182,7 +182,6 @@
 .leaflet-container .leaflet-popup-content-wrapper,
 .leaflet-container .leaflet-popup-content {
   z-index: 99999 !important;
-  padding-top: 18px;
 }
 
 /* Place les contrôles et la barre de recherche en-dessous du popup */
@@ -200,27 +199,18 @@
 }
   /* ======= Barre de recherche sur la carte ======= */
     #recherche-bar {
-      position: absolute;
-      top: 24px;
-      left: 0;
-      width: 100vw;
-    #recherche-bar {
-  position: fixed;        /* flottant sur l'écran, pas juste la carte */
-  left: 18px;             /* marges */
+  position: fixed;
+  left: 18px;
   bottom: 18px;
-  top: auto;
   width: auto;
-  min-width: 320px;       /* ou la largeur de ton input */
+  min-width: 320px;
+  z-index: 9000;
   display: flex;
-  justify-content: flex-start;
-  pointer-events: none;   /* seul l'input capte les clics */
-  z-index: 9000;          /* moins que le popup Leaflet */
+  pointer-events: none;
 }
-
 #rechercheCommune, #autocomplete-list {
-  pointer-events: auto;   /* input cliquable */
+  pointer-events: auto;
 }
-
 #rechercheCommune {
   padding: 10px 18px;
   width: 320px;
@@ -230,12 +220,11 @@
   box-shadow: 0 2px 14px #f7e46a18;
   background: #fff;
 }
-
 #autocomplete-list {
   position: absolute;
   left: 0;
   right: auto;
-  bottom: 48px;  /* juste au-dessus de la barre */
+  bottom: 48px;
   top: auto;
   z-index: 9001;
   width: 340px;
@@ -244,16 +233,15 @@
 </head>
   <!-- BARRE DE RECHERCHE EN-TÊTE -->
 <body>
-<div id="map" style="position:relative;">
-  <div id="recherche-bar">
-    <input
-      id="rechercheCommune"
-      type="text"
-      autocomplete="off"
-      placeholder="Rechercher une commune ZIP ou une adresse..."
-    >
-    <div id="autocomplete-list"></div>
-  </div>
+<div id="map"></div>
+<div id="recherche-bar">
+  <input
+  id="rechercheCommune"
+  type="text"
+  autocomplete="off"
+  placeholder="Rechercher une commune ZIP ou une adresse..."
+>
+  <div id="autocomplete-list"></div>
 </div>
 <!-- Ici la carte s’arrête -->
    <button class="sidebar-toggle" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Afficher/masquer le mode d'emploi">
