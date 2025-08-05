@@ -495,6 +495,14 @@ var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).add
 
     var map = L.map('map').setView([46.7, 2.5], 6);
 window.map = map;
+    map.on('popupopen', function() {
+  document.getElementById('rechercheCommune').style.visibility = 'hidden';
+  document.getElementById('autocomplete-list').style.visibility = 'hidden';
+});
+map.on('popupclose', function() {
+  document.getElementById('rechercheCommune').style.visibility = 'visible';
+  document.getElementById('autocomplete-list').style.visibility = 'visible';
+});
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap contributors'
