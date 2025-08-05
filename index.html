@@ -351,6 +351,10 @@
     }
   );
 }
+    function nl2br(str) {
+  if (!str) return '';
+  return str.replace(/(?:\r\n|\r|\n)/g, '<br>');
+}
     // Mapping type d'offre → URL d’icône
 const iconesTypeOffre = {
   "Médecin généraliste": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/doctor.svg",
@@ -431,7 +435,7 @@ function openPostulerForm(email, contact, marker, offreTitle) {
               `<b>${offre["Titre de l’offre"] || ''}</b><br>
               ${offre["Nom de la struct"] || ''}<br>
               ${offre["Adresse"] || ''}<br>
-${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(offre["Description"] || ''))}<br>
+${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(offre["Description"] || '')))}<br>
 ${gallery}
               <b>Contact :</b> ${offre["Contact"] || ''}<br>
               ${offre["Adresse Email"] ? `<b>Email :</b> ${offre["Adresse Email"]}<br>` : ""}
@@ -596,7 +600,7 @@ function chargerLocationsExistantes() {
   .bindPopup(
     `<b>Cabinet ou bureau à louer</b><br>
     ${loc.Adresse || ""}<br>
-   ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(loc.Description || ''))}<br>
+   ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(loc.Description || '')))}<br>
     ${gallery}
     <b>Contact :</b> ${loc.Contact || ""}<br>
     ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
