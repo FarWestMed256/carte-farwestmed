@@ -654,9 +654,7 @@ map.whenReady(function() {
 function chargerLocationsExistantes() {
   fetch(API_LOCATIONS, {
     method: "GET",
-    headers: {
-      "xc-token": API_TOKEN
-    }
+    headers: { "xc-token": API_TOKEN }
   })
   .then(resp => resp.json())
   .then(data => {
@@ -686,30 +684,29 @@ function chargerLocationsExistantes() {
         iconSize: [40, 40],
         iconAnchor: [20, 40],
         popupAnchor: [0, -40]
-  }); 
-        L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
-  .addTo(map)
-  .bindPopup(
-    `<b>Cabinet ou bureau à louer</b><br>
-    ${loc.Adresse || ""}<br>
-    ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(loc.Description || '')))}<br>
-    ${gallery}
-    <b>Contact :</b> ${loc.Contact || ""}<br>
-    ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
-    <button type="button" class="btn-interesse-location"
-      data-email="${loc.Email || ""}"
-      data-contact="${loc.Contact || ""}"
-      data-adresse="${loc.Adresse || ""}"
-      data-description="${loc.Description || ""}"
-      style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;margin-bottom:4px;">
-      Ça m'intéresse&nbsp;!
-    </button>
-    <button type="button" class="btn-partager"
-      data-lat="${loc.Latitude}" data-lng="${loc.Longitude}" data-type="location"
-      style="margin-left:10px;">Partager</button>
-    <span class="popup-share-menu" style="display:none;position:relative;z-index:9999;"></span>`
-  );
       });
+      L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
+        .addTo(map)
+        .bindPopup(
+          `<b>Cabinet ou bureau à louer</b><br>
+          ${loc.Adresse || ""}<br>
+          ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(loc.Description || '')))}<br>
+          ${gallery}
+          <b>Contact :</b> ${loc.Contact || ""}<br>
+          ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
+          <button type="button" class="btn-interesse-location"
+            data-email="${loc.Email || ""}"
+            data-contact="${loc.Contact || ""}"
+            data-adresse="${loc.Adresse || ""}"
+            data-description="${loc.Description || ""}"
+            style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;margin-bottom:4px;">
+            Ça m'intéresse&nbsp;!
+          </button>
+          <button type="button" class="btn-partager"
+            data-lat="${loc.Latitude}" data-lng="${loc.Longitude}" data-type="location"
+            style="margin-left:10px;">Partager</button>
+          <span class="popup-share-menu" style="display:none;position:relative;z-index:9999;"></span>`
+        );
     });
   });
 }
