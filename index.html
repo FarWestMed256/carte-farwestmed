@@ -1612,13 +1612,23 @@ document.body.addEventListener('click', function(e) {
    <script>
 // Patch pour propagation correcte du click natif sur mobile (iOS & Android)
 // à placer à la fin de ton code JS !
-document.body.addEventListener('touchend', function(e) {
-  if (e.target && e.target.classList && e.target.classList.contains('btn-partager')) {
-    // Propage un vrai "click" après le touchend (Safari iOS bug sinon)
-    e.preventDefault();
-    e.target.click();
-  }
-}, {passive:false});
+(function() {
+  let lastTouchTime = 0;
+  document.body.addEventListener('touchend', function(e) {
+    const target = e.target;
+    if (target && target.classList && target.classList.contains('btn-partager')) {
+      const now = Date.now();
+      if (now - lastTouchTime < 400) return; // anti double trigger
+      lastTouchTime = now;
+      setTimeout(function() {
+        const menu = target.parentNode.querySelector('.popup-share-menu');
+        if (menu && menu.style.display !== 'block') {
+          target.click();
+        }
+      }, 0);
+    }
+  }, {passive: true});
+})();
 </script>
 </body>
 </html>
