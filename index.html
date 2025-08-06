@@ -556,6 +556,10 @@ var popupHtml =
    <button type="button" class="btn-postuler" id="${postulerId}"
      data-email="${offre["Adresse Email"] || ''}" 
      data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
+   <button type="button" class="btn-partager"
+     data-lat="${offre.Latitude}" data-lng="${offre.Longitude}" data-type="offre"
+     style="margin-left:10px;">Partager</button>
+   <span class="popup-share-menu" style="display:none;position:relative;z-index:9999;"></span>
   `;
 
 // Création d’un DivIcon Leaflet (affiche l’émoji dans un rond blanc)
@@ -612,27 +616,27 @@ map.whenReady(function() {
   const urlParams = new URLSearchParams(window.location.search);
   const lat = parseFloat(urlParams.get('lat'));
   const lng = parseFloat(urlParams.get('lng'));
-  const zoom = parseInt(urlParams.get('zoom')) || 15; // Ajouté !
+  const zoom = parseInt(urlParams.get('zoom')) || 15;
 
   if (!isNaN(lat) && !isNaN(lng)) {
     setTimeout(function() {
       map.setView([lat, lng], zoom, { animate: true });
-      const m = L.marker([lat, lng], {
-        icon: L.icon({
-          iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-          shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
-        })
-      }).addTo(map)
-      .bindPopup("👉 Offre ici").openPopup();
-      setTimeout(() => map.removeLayer(m), 12000);
-    }, 500);
+
+      // Essaie de trouver un marker à proximité et ouvrir le popup (offre ou location)
+      let found = false;
+      map.eachLayer(function(layer) {
+        if (layer.getLatLng && layer.openPopup) {
+          const markerLatLng = layer.getLatLng();
+          const dist = map.distance(markerLatLng, L.latLng(lat, lng));
+          if (dist < 70 && !found) { // 70m de tolérance, tu peux adapter
+            found = true;
+            layer.openPopup();
+          }
+        }
+      });
+    }, 700);
   }
 });
-
 // Décalage du centre vers la gauche (pour sidebar à droite)
 map.whenReady(function() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -699,7 +703,11 @@ function chargerLocationsExistantes() {
       data-description="${loc.Description || ""}"
       style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;margin-bottom:4px;">
       Ça m'intéresse&nbsp;!
-    </button>`
+    </button>
+    <button type="button" class="btn-partager"
+      data-lat="${loc.Latitude}" data-lng="${loc.Longitude}" data-type="location"
+      style="margin-left:10px;">Partager</button>
+    <span class="popup-share-menu" style="display:none;position:relative;z-index:9999;"></span>
   );
     });
   });
@@ -1514,8 +1522,60 @@ function toggleSidebar() {
   }
 }
 </script>
-  
   <script src="https://www.google.com/recaptcha/api.js"></script>
+ <script>
+document.body.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('btn-partager')) {
+    const btn = e.target;
+    const lat = btn.getAttribute('data-lat');
+    const lng = btn.getAttribute('data-lng');
+    const type = btn.getAttribute('data-type');
+    const zoom = 15;
+    const url = `${window.location.origin}${window.location.pathname}?lat=${lat}&lng=${lng}&zoom=${zoom}`;
+
+    const menu = btn.nextElementSibling;
+    // Si déjà affiché, on ferme
+    if (menu.style.display === 'block') {
+      menu.style.display = 'none'; menu.innerHTML = ''; return;
+    }
+
+    // Sinon, on affiche le menu de partage
+    if (navigator.share) {
+      // Partage natif mobile
+      navigator.share({
+        title: "Offre médicale FarwestMed",
+        text: "Découvre cette offre sur FarwestMed :",
+        url: url
+      });
+      return;
+    }
+
+    // Desktop : on propose des liens rapides
+    menu.innerHTML = `
+      <div style="background:#fffbe7;border:1px solid #ffe97a;padding:10px 15px;border-radius:12px;box-shadow:0 4px 12px #0002;position:absolute;right:0;top:30px;">
+        <b>Partager via :</b><br>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank">Facebook</a> &nbsp;|&nbsp;
+        <a href="https://wa.me/?text=${encodeURIComponent(url)}" target="_blank">WhatsApp</a> &nbsp;|&nbsp;
+        <a href="mailto:?subject=Offre%20FarwestMed&body=${encodeURIComponent(url)}">Mail</a>
+        <br>
+        <button onclick="navigator.clipboard.writeText('${url}');this.textContent='Lien copié !';event.stopPropagation();" style="font-size:0.95em;margin-top:6px;">Copier le lien</button>
+      </div>
+    `;
+    menu.style.display = 'block';
+
+    // Ferme menu au clic hors popup
+    setTimeout(()=>{
+      function closeMenu(ev) {
+        if (!menu.contains(ev.target) && ev.target!==btn) {
+          menu.style.display = 'none'; menu.innerHTML = '';
+          document.removeEventListener('mousedown', closeMenu);
+        }
+      }
+      document.addEventListener('mousedown', closeMenu);
+    }, 100);
+  }
+});
+</script>
 </body>
 </html>
 <!-- mini commit pour forcer le déploiement -->
