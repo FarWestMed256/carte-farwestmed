@@ -686,13 +686,13 @@ function chargerLocationsExistantes() {
         iconSize: [40, 40],
         iconAnchor: [20, 40],
         popupAnchor: [0, -40]
-      });
-    L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
+  }); 
+        L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
   .addTo(map)
   .bindPopup(
     `<b>Cabinet ou bureau à louer</b><br>
     ${loc.Adresse || ""}<br>
-   ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(loc.Description || '')))}<br>
+    ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(loc.Description || '')))}<br>
     ${gallery}
     <b>Contact :</b> ${loc.Contact || ""}<br>
     ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
@@ -707,8 +707,9 @@ function chargerLocationsExistantes() {
     <button type="button" class="btn-partager"
       data-lat="${loc.Latitude}" data-lng="${loc.Longitude}" data-type="location"
       style="margin-left:10px;">Partager</button>
-    <span class="popup-share-menu" style="display:none;position:relative;z-index:9999;"></span>
+    <span class="popup-share-menu" style="display:none;position:relative;z-index:9999;"></span>`
   );
+      });
     });
   });
 }
