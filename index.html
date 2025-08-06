@@ -450,7 +450,12 @@ function openPostulerForm(email, contact, marker, offreTitle) {
     }, 200);
   }, 100);
 }
-
+    function normaliserTypeOffre(type) {
+  let t = (type || "").trim();
+  if (t === "Aide-soignant(e)") return "Autre professionnel de santé";
+  if (t === "Autre professionnel de santé") return "Offre d'emploi pluridisciplinaire";
+  return t;
+}
     function chargerOffres() {
       fetch(API_OFFRES)
         .then(resp => resp.json())
@@ -466,19 +471,6 @@ function openPostulerForm(email, contact, marker, offreTitle) {
                 '</div>';
             }
             var postulerId = `btn-postuler-${idx}`;
-            var popupHtml =
-              `<b>${offre["Titre de l’offre"] || ''}</b><br>
-              ${offre["Nom de la struct"] || ''}<br>
-              ${offre["Adresse"] || ''}<br>
-${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(offre["Description"] || '')))}<br>
-${gallery}
-              <b>Contact :</b> ${offre["Contact"] || ''}<br>
-              ${offre["Adresse Email"] ? `<b>Email :</b> ${offre["Adresse Email"]}<br>` : ""}
-              <button type="button" class="btn-postuler" id="${postulerId}"
-                data-email="${offre["Adresse Email"] || ''}" 
-                data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
-              `;
-
             const emojisTypeOffre = {
   "Médecin généraliste": "🩺",
   "Médecin spécialiste": "🩻",
@@ -502,13 +494,20 @@ ${gallery}
   "Autre professionnel de santé": "⚕️",
   "Offre d'emploi pluridisciplinaire": "👩🏻‍⚕️"  // ou choisis l'emoji qui te plaît le plus
 };
-var typeOffre = (offre["Titre de l’offre"] || "").trim();
-            if (typeOffre === "Aide-soignant(e)") {
-  typeOffre = "Autre professionnel de santé";
-} else if (typeOffre === "Autre professionnel de santé") {
-  typeOffre = "Offre d'emploi pluridisciplinaire";
-}
+var typeOffre = normaliserTypeOffre(offre["Titre de l’offre"]);
 var emoji = emojisTypeOffre[typeOffre] || "❓";
+var popupHtml =
+  `<b>${typeOffre || ''}</b><br>
+   ${offre["Nom de la struct"] || ''}<br>
+   ${offre["Adresse"] || ''}<br>
+   ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(offre["Description"] || '')))}<br>
+   ${gallery}
+   <b>Contact :</b> ${offre["Contact"] || ''}<br>
+   ${offre["Adresse Email"] ? `<b>Email :</b> ${offre["Adresse Email"]}<br>` : ""}
+   <button type="button" class="btn-postuler" id="${postulerId}"
+     data-email="${offre["Adresse Email"] || ''}" 
+     data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
+  `;
 
 // Création d’un DivIcon Leaflet (affiche l’émoji dans un rond blanc)
 var customIcon = L.divIcon({
