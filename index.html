@@ -182,36 +182,47 @@
   z-index: 8900 !important;
 }
   /* ======= Barre de recherche sur la carte ======= */
-#recherche-bar {
+#footer-bar {
   position: fixed;
-  left: 24px;  /* ou ajuste à 18px si tu préfères */
-  bottom: 15px; /* = même ligne que la barre d'infos */
-  z-index: 9500;
+  left: 0; right: 0; bottom: 0;
   display: flex;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;  /* ou center si tu veux */
+  padding: 0 0 16px 0;
+  z-index: 4001;
   pointer-events: none;
-  background: none;
+  width: 100vw;
+}
+
+#recherche-bar {
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: linear-gradient(90deg, #fffbe7 80%, #fffde9 100%);
+  border: 2px solid #ffe97a;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px #eec74822, 0 2px 9px #0001;
+  margin-left: 16px;
+  margin-right: 16px;
+  pointer-events: auto;
+  min-width: 280px;
 }
 
 #rechercheCommune {
-  pointer-events: auto;
-  width: 340px;
-  padding: 12px 18px 12px 42px;
-  font-size: 1.13em;
-  border-radius: 15px;
-  border: 2px solid #ffe97a;
-  background: linear-gradient(90deg, #fffbe7 80%, #fffde9 100%);
-  box-shadow: 0 4px 18px #eec74822, 0 2px 9px #0001;
+  width: 260px;
+  padding: 11px 18px;
+  font-size: 1.11em;
+  border: none;
+  background: transparent;
   color: #2d2d2d;
-  outline: none;
-  transition: border 0.19s, box-shadow 0.19s;
-  font-family: inherit;
+  border-radius: 16px;
   font-style: italic;
+  outline: none;
+  box-shadow: none;
 }
 
 #rechercheCommune:focus {
-  border: 2.2px solid #ffe066;
-  box-shadow: 0 6px 24px #ffe97a59, 0 2px 11px #0001;
   background: #fffde5;
 }
 
@@ -220,22 +231,10 @@
   opacity: 0.93;
 }
 
-.search-icon {
-  position: absolute;
-  left: 38px;
-  bottom: 27px;
-  font-size: 1.22em;
-  opacity: 0.75;
-  pointer-events: none;
-  z-index: 9100;
-  transform: translateY(2px);
-}
-
-/* AUTOCOMPLETE VERS LE HAUT */
 #autocomplete-list {
   position: absolute;
   left: 0;
-  bottom: 100%; /* sort vers le haut */
+  bottom: 100%;
   width: 100%;
   background: #fffbe7;
   color: #232323;
@@ -272,31 +271,44 @@
   border-radius: 2px;
 }
 
+#footer-infos {
+  background: rgba(245, 245, 245, 0.95);
+  color: #333;
+  font-size: 1em;
+  padding: 10px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 18px #0002;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  opacity: 0.98;
+  margin-left: 8px;
+  pointer-events: auto;
+}
+
 @media (max-width: 700px) {
-  #recherche-bar {
-    left: 2vw;
-    bottom: 13vw;
-  }
-  #rechercheCommune {
-    width: 82vw;
-    min-width: 140px;
-    font-size: 1em;
-  }
+  #footer-bar { flex-direction: column; align-items: stretch; padding: 0 0 7vw 0; }
+  #recherche-bar { margin-left: 8vw; margin-right: 2vw; min-width: 0; }
+  #rechercheCommune { width: 78vw; font-size: 0.98em; }
+  #footer-infos { margin-top: 2vw; margin-left: 0; text-align: center;}
 }
   </style>
 </head>
   <!-- BARRE DE RECHERCHE EN-TÊTE -->
 <body>
 <div id="map"></div>
-<div id="recherche-bar">
-  <span class="search-icon" aria-hidden="true">🔍</span>
-  <input
-    id="rechercheCommune"
-    type="text"
-    autocomplete="off"
-    placeholder="Rechercher une adresse"
-  >
-  <div id="autocomplete-list"></div>
+<div id="footer-bar">
+  <div id="recherche-bar">
+    <input
+      id="rechercheCommune"
+      type="text"
+      autocomplete="off"
+      placeholder="Rechercher une adresse"
+    >
+    <div id="autocomplete-list"></div>
+  </div>
+  <div id="footer-infos">
+    Données de zonages à jour au 1er août 2025
+  </div>
 </div>
 <!-- Ici la carte s’arrête -->
    <button class="sidebar-toggle" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Afficher/masquer le mode d'emploi">
@@ -361,24 +373,6 @@
       </li>
     </ul>
   </div>
-</div>
-  <div id="footer-infos"
-  style="
-    position:fixed;
-    left:50%;
-    bottom:15px;
-    transform:translateX(-50%);
-    background:rgba(245, 245, 245, 0.95);
-    color:#333;
-    font-size:1em;
-    padding:10px 24px;
-    border-radius:16px;
-    box-shadow:0 2px 18px #0002;
-    z-index:3200;
-    font-weight:500;
-    letter-spacing:0.04em;
-    opacity:0.98;">
-  Données de zonages à jour au 1er août 2025
 </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <script>
