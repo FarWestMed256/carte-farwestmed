@@ -489,7 +489,7 @@ ${gallery}
   "Orthophoniste": "🗣️",
   "Orthoptiste": "👁️",
   "Psychologue": "🧠",
-    "Ergothérapeute": "🖐️",
+  "Ergothérapeute": "🖐️",
   "Pédicure-podologue": "🦶",
   "Diététicien(ne)": "🥗",
   "Psychomotricien(ne)": "🤸",
@@ -499,10 +499,15 @@ ${gallery}
   "Pharmacien(ne)": "💊",
   "Secrétaire médical(e)": "🗂️",
   "Assistant(e) médical(e)": "👩‍💼",
-  "Aide-soignant(e)": "🤲",
-  "Autre professionnel de santé": "⚕️"
+  "Autre professionnel de santé": "⚕️",
+  "Offre d'emploi pluridisciplinaire": "👩🏻‍⚕️👨🏻‍⚕️ "  // ou choisis l'emoji qui te plaît le plus
 };
 var typeOffre = (offre["Titre de l’offre"] || "").trim();
+            if (typeOffre === "Aide-soignant(e)") {
+  typeOffre = "Autre professionnel de santé";
+} else if (typeOffre === "Autre professionnel de santé") {
+  typeOffre = "Offre d'emploi pluridisciplinaire";
+}
 var emoji = emojisTypeOffre[typeOffre] || "❓";
 
 // Création d’un DivIcon Leaflet (affiche l’émoji dans un rond blanc)
@@ -999,8 +1004,8 @@ L.control.layers(null, {
   <option value="Pharmacien(ne)">Pharmacien(ne)</option>
   <option value="Secrétaire médical(e)">Secrétaire médical(e)</option>
   <option value="Assistant(e) médical(e)">Assistant(e) médical(e)</option>
-  <option value="Aide-soignant(e)">Aide-soignant(e)</option>
   <option value="Autre professionnel de santé">Autre professionnel de santé</option>
+<option value="Offre d'emploi pluridisciplinaire">Offre d'emploi pluridisciplinaire</option>
 </select>
           Nom de la structure :<br><input type="text" name="structure"><br>
           Adresse :<br><input type="text" name="adresse"><br>
