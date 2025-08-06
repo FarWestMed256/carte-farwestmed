@@ -1531,7 +1531,7 @@ document.body.addEventListener('click', function(e) {
     const zoom = 15;
     const url = `${window.location.origin}${window.location.pathname}?lat=${lat}&lng=${lng}&zoom=${zoom}`;
 
-    const menu = btn.nextElementSibling;
+    const menu = btn.parentNode.querySelector('.popup-share-menu');
     // Si déjà affiché, on ferme
     if (menu.style.display === 'block') {
       menu.style.display = 'none'; menu.innerHTML = ''; return;
