@@ -472,17 +472,6 @@ const API_TOKEN = "zuBtJi0p7vALQo2W_HTWzvaYRxyyQKOhRaLsrNU4";
       basicLightbox.create('<img src="' + url + '" style="max-width:90vw;max-height:90vh;">').show();
     }
     window.showLightbox = showLightbox;
-    function shareOffer(title, url, text = '') {
-  if (navigator.share) {
-    navigator.share({
-      title: title,
-      text: text,
-      url: url
-    }).catch((err) => {});
-  } else {
-    window.prompt("Copie ce lien :", url);
-  }
-}
 
 function openPostulerForm(email, contact, marker, offreTitle) {
   setTimeout(function() {
@@ -556,8 +545,6 @@ function openPostulerForm(email, contact, marker, offreTitle) {
 };
 var typeOffre = normaliserTypeOffre(offre["Titre de l’offre"]);
 var emoji = emojisTypeOffre[typeOffre] || "❓";
-var shareUrl = window.location.origin + window.location.pathname +
-    `?lat=${offre.Latitude}&lng=${offre.Longitude}&zoom=16&offre=${idx}`;
 var popupHtml =
   `<b>${typeOffre || ''}</b><br>
    ${offre["Nom de la struct"] || ''}<br>
@@ -569,13 +556,6 @@ var popupHtml =
    <button type="button" class="btn-postuler" id="${postulerId}"
      data-email="${offre["Adresse Email"] || ''}" 
      data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
-   <button type="button" class="btn-partager" style="margin-left:10px;"
-     onclick="shareOffer(
-        '${typeOffre} - ${offre["Nom de la struct"] ? offre["Nom de la struct"].replace(/'/g, "\\'") : ""}',
-        shareUrl,
-        'Découvre cette offre sur FarwestMed.fr'
-     )"
-   >Partager</button>
   `;
 
 // Création d’un DivIcon Leaflet (affiche l’émoji dans un rond blanc)
@@ -597,13 +577,7 @@ var customIcon = L.divIcon({
   popupAnchor: [0,-46]
 });
 var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).addTo(map).bindPopup(popupHtml);
-// Ouverture auto si c’est l’idx attendu :
-if (popupOfferIdx !== null && String(idx) === String(popupOfferIdx)) {
-  setTimeout(() => {
-    map.setView([offre.Latitude, offre.Longitude], 16, {animate:true});
-    marker.openPopup();
-  }, 750); // petit délai pour être sûr que la carte et les marqueurs sont prêts
-}
+
             marker.on("popupopen", function() {
               var btn = document.getElementById(postulerId);
               if(btn) {
@@ -622,16 +596,6 @@ if (popupOfferIdx !== null && String(idx) === String(popupOfferIdx)) {
     }
 
     var map = L.map('map').setView([46.7, 2.5], 6);
-let popupOfferIdx = null;
-map.whenReady(() => {
-  // Récupère les paramètres de l’URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const lat = parseFloat(urlParams.get('lat'));
-  const lng = parseFloat(urlParams.get('lng'));
-  const zoom = parseInt(urlParams.get('zoom')) || 15;
-  popupOfferIdx = urlParams.get('offre');
-  // Le centrage est déjà fait dans ton code
-});
 window.onload = function() {
   document.getElementById('rechercheCommune').addEventListener('mousedown', function(e) {
     e.stopPropagation();
@@ -640,17 +604,10 @@ window.onload = function() {
     e.stopPropagation();
   });
 };
-
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
-
-// === CORRIGÉ : crée d'abord tous les clusters ===
-var zipCluster = L.markerClusterGroup().addTo(map);
-var zrrCluster = L.markerClusterGroup().addTo(map);
-var goldCluster = L.markerClusterGroup().addTo(map);
-var zacCluster = L.markerClusterGroup().addTo(map);
 map.whenReady(function() {
   const urlParams = new URLSearchParams(window.location.search);
   const lat = parseFloat(urlParams.get('lat'));
@@ -675,7 +632,20 @@ map.whenReady(function() {
     }, 500);
   }
 });
-      chargerOffres();
+
+// Décalage du centre vers la gauche (pour sidebar à droite)
+map.whenReady(function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const lat = parseFloat(urlParams.get('lat'));
+  const lng = parseFloat(urlParams.get('lng'));
+  if (isNaN(lat) || isNaN(lng)) {
+    setTimeout(function() {
+      var size = map.getSize();
+      map.panBy([size.x * 0.18, 0], { animate: false });  // 30% de la largeur vers la droite (décale le centre à gauche)
+    }, 400); // petit délai pour être sûr que tout est chargé
+  }
+});
+    chargerOffres();
     chargerLocationsExistantes();
 function chargerLocationsExistantes() {
   fetch(API_LOCATIONS, {
@@ -715,46 +685,30 @@ function chargerLocationsExistantes() {
       });
     L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
   .addTo(map)
-.bindPopup(
-  `<b>Cabinet ou bureau à louer</b><br>
-  ${loc.Adresse || ""}<br>
-  ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(loc.Description || '')))}<br>
-  ${gallery}
-  <b>Contact :</b> ${loc.Contact || ""}<br>
-  ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
-  <button type="button" class="btn-interesse-location"
-    data-email="${loc.Email || ""}"
-    data-contact="${loc.Contact || ""}"
-    data-adresse="${loc.Adresse || ""}"
-    data-description="${loc.Description || ""}"
-    style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;margin-bottom:4px;">
-    Ça m'intéresse&nbsp;!
-  </button>
-  <button type="button" class="btn-partager" style="margin-left:10px;"
-    onclick="shareOffer(
-      'Cabinet à louer - ${loc.Adresse ? loc.Adresse.replace(/'/g, \"\\'\") : ''}',
-      window.location.href,
-      'Découvre ce cabinet à louer sur FarwestMed.fr'
-    )"
-  >Partager</button>
-  `
-);
+  .bindPopup(
+    `<b>Cabinet ou bureau à louer</b><br>
+    ${loc.Adresse || ""}<br>
+   ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(loc.Description || '')))}<br>
+    ${gallery}
+    <b>Contact :</b> ${loc.Contact || ""}<br>
+    ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
+    <button type="button" class="btn-interesse-location"
+      data-email="${loc.Email || ""}"
+      data-contact="${loc.Contact || ""}"
+      data-adresse="${loc.Adresse || ""}"
+      data-description="${loc.Description || ""}"
+      style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;margin-bottom:4px;">
+      Ça m'intéresse&nbsp;!
+    </button>`
+  );
     });
   });
 }
-
-// Décalage du centre vers la gauche (pour sidebar à droite)
-map.whenReady(function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const lat = parseFloat(urlParams.get('lat'));
-  const lng = parseFloat(urlParams.get('lng'));
-  if (isNaN(lat) || isNaN(lng)) {
-    setTimeout(function() {
-      var size = map.getSize();
-      map.panBy([size.x * 0.18, 0], { animate: false });  // 30% de la largeur vers la droite (décale le centre à gauche)
-    }, 400); // petit délai pour être sûr que tout est chargé
-  }
-});
+// 1. Crée le layer ZIP
+var zipCluster = L.markerClusterGroup().addTo(map);
+    var zrrCluster = L.markerClusterGroup().addTo(map);
+    var goldCluster = L.markerClusterGroup().addTo(map);
+    var zacCluster = L.markerClusterGroup().addTo(map);
 // 2. Fonction d'import du CSV ZIP
 function importerZIP(csvFile, groupLayer) {
   console.log('importerZIP appelée !');
@@ -1334,7 +1288,7 @@ if (!recaptchaResponse) {
   .then(response => response.json())
   .then(resp => {
     showCarteNotification("✅ Annonce de location ajoutée !");
-    // Ajoute le marker sur la carte si tu veux un retour instantané :
+    // Ajoute le marker sur la carte si tu veux un retour instantané :
     var locationIcon = L.divIcon({
       html: `<div style="
         font-size:2em;
@@ -1493,7 +1447,7 @@ if (!canSubmit("candidatureForm", 5, 60)) {
     if (popup) window.map.closePopup();
     grecaptcha.reset();
   };
-  // ⬇️ AJOUTE CE BLOC : 
+  // ⬇️ AJOUTE CE BLOC : 
   if (window.grecaptcha && document.querySelector('#interesseNom') && document.querySelector('.g-recaptcha')) {
     grecaptcha.render(document.querySelector('.g-recaptcha'));
   }
