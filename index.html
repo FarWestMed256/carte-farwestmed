@@ -332,6 +332,11 @@
   transform: translateY(-50%);
   opacity: 0.85;
 }
+    .leaflet-popup-content button.btn-partager, 
+.leaflet-popup-content .btn-partager {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
   </style>
 </head>
   <!-- BARRE DE RECHERCHE EN-TÊTE -->
@@ -1620,12 +1625,18 @@ document.body.addEventListener('click', function(e) {
       const now = Date.now();
       if (now - lastTouchTime < 400) return; // anti double trigger
       lastTouchTime = now;
-      setTimeout(function() {
-        const menu = target.parentNode.querySelector('.popup-share-menu');
-        if (menu && menu.style.display !== 'block') {
-          target.click();
-        }
-      }, 0);
+     setTimeout(function() {
+  const menu = target.parentNode.querySelector('.popup-share-menu');
+  if (menu && menu.style.display !== 'block') {
+    // Créé un vrai événement click natif
+    const evt = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+    target.dispatchEvent(evt);
+  }
+}, 0);
     }
   }, {passive: true});
 })();
