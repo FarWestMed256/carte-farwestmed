@@ -472,6 +472,17 @@ const API_TOKEN = "zuBtJi0p7vALQo2W_HTWzvaYRxyyQKOhRaLsrNU4";
       basicLightbox.create('<img src="' + url + '" style="max-width:90vw;max-height:90vh;">').show();
     }
     window.showLightbox = showLightbox;
+    function shareOffer(title, url, text = '') {
+  if (navigator.share) {
+    navigator.share({
+      title: title,
+      text: text,
+      url: url
+    }).catch((err) => {});
+  } else {
+    window.prompt("Copie ce lien :", url);
+  }
+}
 
 function openPostulerForm(email, contact, marker, offreTitle) {
   setTimeout(function() {
@@ -505,6 +516,16 @@ function openPostulerForm(email, contact, marker, offreTitle) {
   if (t === "Autre professionnel de santé") return "Offre d'emploi pluridisciplinaire";
   return t;
 }
+    let popupOfferIdx = null;
+map.whenReady(() => {
+  // Récupère les paramètres de l’URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const lat = parseFloat(urlParams.get('lat'));
+  const lng = parseFloat(urlParams.get('lng'));
+  const zoom = parseInt(urlParams.get('zoom')) || 15;
+  popupOfferIdx = urlParams.get('offre');
+  // Le centrage est déjà fait dans ton code
+});
     function chargerOffres() {
       fetch(API_OFFRES)
         .then(resp => resp.json())
@@ -545,6 +566,8 @@ function openPostulerForm(email, contact, marker, offreTitle) {
 };
 var typeOffre = normaliserTypeOffre(offre["Titre de l’offre"]);
 var emoji = emojisTypeOffre[typeOffre] || "❓";
+var shareUrl = window.location.origin + window.location.pathname +
+    `?lat=${offre.Latitude}&lng=${offre.Longitude}&zoom=16&offre=${idx}`;
 var popupHtml =
   `<b>${typeOffre || ''}</b><br>
    ${offre["Nom de la struct"] || ''}<br>
@@ -556,6 +579,13 @@ var popupHtml =
    <button type="button" class="btn-postuler" id="${postulerId}"
      data-email="${offre["Adresse Email"] || ''}" 
      data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
+   <button type="button" class="btn-partager" style="margin-left:10px;"
+     onclick="shareOffer(
+        '${typeOffre} - ${offre["Nom de la struct"] ? offre["Nom de la struct"].replace(/'/g, "\\'") : ""}',
+        shareUrl,
+        'Découvre cette offre sur FarwestMed.fr'
+     )"
+   >Partager</button>
   `;
 
 // Création d’un DivIcon Leaflet (affiche l’émoji dans un rond blanc)
@@ -577,7 +607,13 @@ var customIcon = L.divIcon({
   popupAnchor: [0,-46]
 });
 var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).addTo(map).bindPopup(popupHtml);
-
+// Ouverture auto si c’est l’idx attendu :
+if (popupOfferIdx !== null && String(idx) === String(popupOfferIdx)) {
+  setTimeout(() => {
+    map.setView([offre.Latitude, offre.Longitude], 16, {animate:true});
+    marker.openPopup();
+  }, 750); // petit délai pour être sûr que la carte et les marqueurs sont prêts
+}
             marker.on("popupopen", function() {
               var btn = document.getElementById(postulerId);
               if(btn) {
@@ -685,22 +721,30 @@ function chargerLocationsExistantes() {
       });
     L.marker([parseFloat(loc.Latitude), parseFloat(loc.Longitude)], {icon: locationIcon})
   .addTo(map)
-  .bindPopup(
-    `<b>Cabinet ou bureau à louer</b><br>
-    ${loc.Adresse || ""}<br>
-   ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(loc.Description || '')))}<br>
-    ${gallery}
-    <b>Contact :</b> ${loc.Contact || ""}<br>
-    ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
-    <button type="button" class="btn-interesse-location"
-      data-email="${loc.Email || ""}"
-      data-contact="${loc.Contact || ""}"
-      data-adresse="${loc.Adresse || ""}"
-      data-description="${loc.Description || ""}"
-      style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;margin-bottom:4px;">
-      Ça m'intéresse&nbsp;!
-    </button>`
-  );
+.bindPopup(
+  `<b>Cabinet ou bureau à louer</b><br>
+  ${loc.Adresse || ""}<br>
+  ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(loc.Description || '')))}<br>
+  ${gallery}
+  <b>Contact :</b> ${loc.Contact || ""}<br>
+  ${loc.Email ? `<b>Email :</b> ${loc.Email}<br>` : ""}
+  <button type="button" class="btn-interesse-location"
+    data-email="${loc.Email || ""}"
+    data-contact="${loc.Contact || ""}"
+    data-adresse="${loc.Adresse || ""}"
+    data-description="${loc.Description || ""}"
+    style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;margin-bottom:4px;">
+    Ça m'intéresse&nbsp;!
+  </button>
+  <button type="button" class="btn-partager" style="margin-left:10px;"
+    onclick="shareOffer(
+      'Cabinet à louer - ${loc.Adresse ? loc.Adresse.replace(/'/g, \"\\'\") : ''}',
+      window.location.href,
+      'Découvre ce cabinet à louer sur FarwestMed.fr'
+    )"
+  >Partager</button>
+  `
+);
     });
   });
 }
