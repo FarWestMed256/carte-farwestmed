@@ -1608,6 +1608,17 @@ document.body.addEventListener('click', function(e) {
     }, 100);
   }
 });
+   </script>
+   <script>
+// Patch pour propagation correcte du click natif sur mobile (iOS & Android)
+// à placer à la fin de ton code JS !
+document.body.addEventListener('touchend', function(e) {
+  if (e.target && e.target.classList && e.target.classList.contains('btn-partager')) {
+    // Propage un vrai "click" après le touchend (Safari iOS bug sinon)
+    e.preventDefault();
+    e.target.click();
+  }
+}, {passive:false});
 </script>
 </body>
 </html>
