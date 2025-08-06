@@ -48,20 +48,6 @@
     }
     .btn-postuler:hover {
       background: #ffe49c;
-    }
-    #autocomplete-list {
-  background: #292929;
-  color: #fff;
-  border-radius: 0 0 10px 10px;
-  box-shadow: 0 4px 16px #0003;
-  max-height: 280px;
-  overflow-y: auto;
-  position: absolute;
-  z-index: 1200;
-  width: 320px;
-  font-size: 1em;
-  padding: 0;
-  margin: 0;
 }
 .autocomplete-suggestion {
   padding: 10px 18px;
@@ -192,20 +178,17 @@
   /* Tu peux aussi ajouter une transition pour l’opacité si tu veux la faire varier */
   transition: opacity 0.15s;
 }
-#autocomplete-list {
-  z-index: 1200 !important;
-}
 .sidebar-toggle {
   z-index: 8900 !important;
 }
   /* ======= Barre de recherche sur la carte ======= */
 #recherche-bar {
   position: fixed;
-  left: 24px;
-  bottom: 26px; /* Ajuste si besoin, mais 26px est parfait pour survoler la barre d'infos sans coller au bas de l'écran */
-  z-index: 9000;
+  left: 24px;  /* ou ajuste à 18px si tu préfères */
+  bottom: 15px; /* = même ligne que la barre d'infos */
+  z-index: 9500;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   pointer-events: none;
   background: none;
 }
@@ -213,9 +196,9 @@
 #rechercheCommune {
   pointer-events: auto;
   width: 340px;
-  padding: 13px 20px 13px 44px; /* Padding gauche pour l’icône */
+  padding: 12px 18px 12px 42px;
   font-size: 1.13em;
-  border-radius: 16px;
+  border-radius: 15px;
   border: 2px solid #ffe97a;
   background: linear-gradient(90deg, #fffbe7 80%, #fffde9 100%);
   box-shadow: 0 4px 18px #eec74822, 0 2px 9px #0001;
@@ -223,7 +206,6 @@
   outline: none;
   transition: border 0.19s, box-shadow 0.19s;
   font-family: inherit;
-  backdrop-filter: blur(2px) saturate(1.09);
   font-style: italic;
 }
 
@@ -240,66 +222,66 @@
 
 .search-icon {
   position: absolute;
-  left: 36px;
-  bottom: 36px;
-  font-size: 1.3em;
+  left: 38px;
+  bottom: 27px;
+  font-size: 1.22em;
   opacity: 0.75;
   pointer-events: none;
   z-index: 9100;
-  /* Centrage vertical parfait : */
   transform: translateY(2px);
 }
 
-#recherche-bar {
-  position: fixed;
-  left: 24px;
-  bottom: 26px;
-  z-index: 9000;
-  display: flex;
-  align-items: center;
-  pointer-events: none;
-}
-
-#recherche-bar .search-icon {
-  left: 36px;
-  /* Pour aligner parfaitement sur la hauteur du input, utilise flex */
+/* AUTOCOMPLETE VERS LE HAUT */
+#autocomplete-list {
   position: absolute;
-  margin-left: 9px;
+  left: 0;
+  bottom: 100%; /* sort vers le haut */
+  width: 100%;
+  background: #fffbe7;
+  color: #232323;
+  border-radius: 15px 15px 0 0;
+  box-shadow: 0 -6px 32px #eec74855, 0 -2px 12px #0001;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 9600;
+  border: 1.5px solid #ffe97a;
+  border-bottom: none;
+  font-size: 1em;
+  padding: 0;
+  margin: 0;
 }
 
-#recherche-bar {
-  /* Ajoute ce style pour que les enfants en absolute soient bien calés */
-  position: fixed;
+.autocomplete-suggestion {
+  padding: 9px 18px;
+  cursor: pointer;
+  border-bottom: 1px solid #ffecb266;
+  user-select: none;
+  transition: background 0.12s, color 0.12s;
+  background: transparent;
+}
+.autocomplete-suggestion:last-child { border-bottom: none; }
+.autocomplete-suggestion:hover, .autocomplete-suggestion.active {
+  background: #ffe49c;
+  color: #333;
+}
+.autocomplete-highlight {
+  background: #fff3ce;
+  color: #b39200;
+  font-weight: bold;
+  padding: 0 2px;
+  border-radius: 2px;
 }
 
 @media (max-width: 700px) {
   #recherche-bar {
-    left: 4vw;
-    bottom: 14vw;
+    left: 2vw;
+    bottom: 13vw;
   }
   #rechercheCommune {
-    width: 84vw;
-    min-width: 180px;
+    width: 82vw;
+    min-width: 140px;
     font-size: 1em;
   }
-}
-    #autocomplete-list {
-  position: absolute;
-  left: 0;
-  top: 100%;
-  width: 100%;
-  background: #fffbe7;
-  color: #232323;
-  border-radius: 0 0 15px 15px;
-  box-shadow: 0 6px 32px #eec74855, 0 2px 12px #0001;
-  max-height: 260px;
-  overflow-y: auto;
-  z-index: 9101;
-  border: 1.6px solid #ffe97a;
-  border-top: none;
-  font-size: 1em;
-  padding: 0;
-  margin: 0;
 }
   </style>
 </head>
