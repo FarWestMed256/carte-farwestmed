@@ -198,27 +198,71 @@
   z-index: 8900 !important;
 }
   /* ======= Barre de recherche sur la carte ======= */
-    #recherche-bar {
+#recherche-bar {
   position: fixed;
-  left: 18px;
-  bottom: 18px;
-  width: auto;
-  min-width: 320px;
+  left: 24px;
+  bottom: 22px;
   z-index: 9000;
   display: flex;
+  align-items: center;
   pointer-events: none;
+  background: none;
 }
-#rechercheCommune, #autocomplete-list {
-  pointer-events: auto;
-}
+
 #rechercheCommune {
-  padding: 10px 18px;
-  width: 320px;
-  border-radius: 10px;
-  border: 1.5px solid #e3e3e3;
-  font-size: 1.11em;
-  box-shadow: 0 2px 14px #f7e46a18;
-  background: #fff;
+  pointer-events: auto;
+  width: 340px;
+  padding: 16px 20px 16px 48px;
+  font-size: 1.18em;
+  border-radius: 16px;
+  border: 2.2px solid #ffe97a;
+  background: linear-gradient(90deg, #fffbe7 80%, #fffde9 100%);
+  box-shadow: 0 4px 18px #eec74822, 0 2px 9px #0001;
+  color: #2d2d2d;
+  outline: none;
+  transition: border 0.19s, box-shadow 0.19s;
+  font-family: inherit;
+}
+
+#rechercheCommune:focus {
+  border: 2.4px solid #ffe066;
+  box-shadow: 0 6px 24px #ffe97a59, 0 2px 11px #0001;
+  background: #fffde5;
+}
+
+#rechercheCommune::placeholder {
+  color: #a3a29a;
+  opacity: 0.93;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+#recherche-bar::before {
+  content: "🔍";
+  position: absolute;
+  left: 37px;
+  bottom: 34px;
+  font-size: 1.34em;
+  opacity: 0.87;
+  pointer-events: none;
+  z-index: 9100;
+}
+
+@media (max-width: 700px) {
+  #recherche-bar {
+    left: 6vw;
+    bottom: 13vw;
+  }
+  #rechercheCommune {
+    width: 85vw;
+    min-width: 180px;
+    font-size: 1em;
+  }
+  #recherche-bar::before {
+    left: 19px;
+    bottom: 20px;
+    font-size: 1.16em;
+  }
 }
 #autocomplete-list {
   position: absolute;
