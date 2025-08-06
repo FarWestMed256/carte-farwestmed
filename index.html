@@ -64,11 +64,12 @@
   margin: 0;
 }
 .autocomplete-suggestion {
-  padding: 8px 14px;
+  padding: 10px 18px;
   cursor: pointer;
-  border-bottom: 1px solid #3334;
+  border-bottom: 1px solid #ffecb266;
   user-select: none;
-  transition: background 0.12s;
+  transition: background 0.12s, color 0.12s;
+  background: transparent;
 }
 .autocomplete-suggestion:last-child { border-bottom: none; }
 .autocomplete-suggestion:hover, .autocomplete-suggestion.active {
@@ -76,8 +77,8 @@
   color: #333;
 }
 .autocomplete-highlight {
-  background: #ffe49c;
-  color: #222;
+  background: #fff3ce;
+  color: #b39200;
   font-weight: bold;
   padding: 0 2px;
   border-radius: 2px;
@@ -201,7 +202,7 @@
 #recherche-bar {
   position: fixed;
   left: 24px;
-  bottom: 22px;
+  bottom: 26px; /* Ajuste si besoin, mais 26px est parfait pour survoler la barre d'infos sans coller au bas de l'écran */
   z-index: 9000;
   display: flex;
   align-items: center;
@@ -212,20 +213,22 @@
 #rechercheCommune {
   pointer-events: auto;
   width: 340px;
-  padding: 16px 20px 16px 48px;
-  font-size: 1.18em;
+  padding: 13px 20px 13px 44px; /* Padding gauche pour l’icône */
+  font-size: 1.13em;
   border-radius: 16px;
-  border: 2.2px solid #ffe97a;
+  border: 2px solid #ffe97a;
   background: linear-gradient(90deg, #fffbe7 80%, #fffde9 100%);
   box-shadow: 0 4px 18px #eec74822, 0 2px 9px #0001;
   color: #2d2d2d;
   outline: none;
   transition: border 0.19s, box-shadow 0.19s;
   font-family: inherit;
+  backdrop-filter: blur(2px) saturate(1.09);
+  font-style: italic;
 }
 
 #rechercheCommune:focus {
-  border: 2.4px solid #ffe066;
+  border: 2.2px solid #ffe066;
   box-shadow: 0 6px 24px #ffe97a59, 0 2px 11px #0001;
   background: #fffde5;
 }
@@ -233,45 +236,70 @@
 #rechercheCommune::placeholder {
   color: #a3a29a;
   opacity: 0.93;
-  font-style: italic;
-  letter-spacing: 0.01em;
 }
 
-#recherche-bar::before {
-  content: "🔍";
+.search-icon {
   position: absolute;
-  left: 37px;
-  bottom: 34px;
-  font-size: 1.34em;
-  opacity: 0.87;
+  left: 36px;
+  bottom: 36px;
+  font-size: 1.3em;
+  opacity: 0.75;
   pointer-events: none;
   z-index: 9100;
+  /* Centrage vertical parfait : */
+  transform: translateY(2px);
+}
+
+#recherche-bar {
+  position: fixed;
+  left: 24px;
+  bottom: 26px;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+#recherche-bar .search-icon {
+  left: 36px;
+  /* Pour aligner parfaitement sur la hauteur du input, utilise flex */
+  position: absolute;
+  margin-left: 9px;
+}
+
+#recherche-bar {
+  /* Ajoute ce style pour que les enfants en absolute soient bien calés */
+  position: fixed;
 }
 
 @media (max-width: 700px) {
   #recherche-bar {
-    left: 6vw;
-    bottom: 13vw;
+    left: 4vw;
+    bottom: 14vw;
   }
   #rechercheCommune {
-    width: 85vw;
+    width: 84vw;
     min-width: 180px;
     font-size: 1em;
   }
-  #recherche-bar::before {
-    left: 19px;
-    bottom: 20px;
-    font-size: 1.16em;
-  }
 }
-#autocomplete-list {
+    #autocomplete-list {
   position: absolute;
   left: 0;
-  right: auto;
-  bottom: 48px;
-  top: auto;
-  z-index: 9001;
-  width: 340px;
+  top: 100%;
+  width: 100%;
+  background: #fffbe7;
+  color: #232323;
+  border-radius: 0 0 15px 15px;
+  box-shadow: 0 6px 32px #eec74855, 0 2px 12px #0001;
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 9101;
+  border: 1.6px solid #ffe97a;
+  border-top: none;
+  font-size: 1em;
+  padding: 0;
+  margin: 0;
 }
   </style>
 </head>
@@ -279,12 +307,13 @@
 <body>
 <div id="map"></div>
 <div id="recherche-bar">
+  <span class="search-icon" aria-hidden="true">🔍</span>
   <input
-  id="rechercheCommune"
-  type="text"
-  autocomplete="off"
-  placeholder="Rechercher une adresse"
->
+    id="rechercheCommune"
+    type="text"
+    autocomplete="off"
+    placeholder="Rechercher une adresse"
+  >
   <div id="autocomplete-list"></div>
 </div>
 <!-- Ici la carte s’arrête -->
