@@ -1571,27 +1571,23 @@ document.body.addEventListener('click', function(e) {
     const type = btn.getAttribute('data-type');
     const zoom = 15;
     const url = `${window.location.origin}${window.location.pathname}?lat=${lat}&lng=${lng}&zoom=${zoom}`;
-
     const menu = btn.parentNode.querySelector('.popup-share-menu');
-    // Si déjà affiché, on ferme
     if (menu.style.display === 'block') {
       menu.style.display = 'none'; menu.innerHTML = ''; return;
     }
-
-    // Sinon, on affiche le menu de partage
-    if (navigator.share) {
-      // Partage natif mobile
+    // Détection mobile (empêche l’appel sur desktop !)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (navigator.share && isMobile) {
       navigator.share({
         title: "Offre médicale FarwestMed",
         text: "Découvre cette offre sur FarwestMed :",
         url: url
-      });
+      }).catch(()=>{});
       return;
     }
-
-    // Desktop : on propose des liens rapides
+    // Desktop
     menu.innerHTML = `
-      <div style="background:#fffbe7;border:1px solid #ffe97a;padding:10px 15px;border-radius:12px;box-shadow:0 4px 12px #0002;position:absolute;right:0;top:30px;">
+      <div style="background:#fffbe7;border:1px solid #bbe7ff;padding:10px 15px;border-radius:12px;box-shadow:0 4px 12px #0002;position:absolute;right:0;top:30px;">
         <b>Partager via :</b><br>
         <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank">Facebook</a> &nbsp;|&nbsp;
         <a href="https://wa.me/?text=${encodeURIComponent(url)}" target="_blank">WhatsApp</a> &nbsp;|&nbsp;
@@ -1601,8 +1597,6 @@ document.body.addEventListener('click', function(e) {
       </div>
     `;
     menu.style.display = 'block';
-
-    // Ferme menu au clic hors popup
     setTimeout(()=>{
       function closeMenu(ev) {
         if (!menu.contains(ev.target) && ev.target!==btn) {
