@@ -632,6 +632,7 @@ if (popupOfferIdx !== null && String(idx) === String(popupOfferIdx)) {
     }
 
     var map = L.map('map').setView([46.7, 2.5], 6);
+
 window.onload = function() {
   document.getElementById('rechercheCommune').addEventListener('mousedown', function(e) {
     e.stopPropagation();
@@ -640,10 +641,17 @@ window.onload = function() {
     e.stopPropagation();
   });
 };
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
+
+// === CORRIGÉ : crée d'abord tous les clusters ===
+var zipCluster = L.markerClusterGroup().addTo(map);
+var zrrCluster = L.markerClusterGroup().addTo(map);
+var goldCluster = L.markerClusterGroup().addTo(map);
+var zacCluster = L.markerClusterGroup().addTo(map);
 map.whenReady(function() {
   const urlParams = new URLSearchParams(window.location.search);
   const lat = parseFloat(urlParams.get('lat'));
@@ -668,20 +676,7 @@ map.whenReady(function() {
     }, 500);
   }
 });
-
-// Décalage du centre vers la gauche (pour sidebar à droite)
-map.whenReady(function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const lat = parseFloat(urlParams.get('lat'));
-  const lng = parseFloat(urlParams.get('lng'));
-  if (isNaN(lat) || isNaN(lng)) {
-    setTimeout(function() {
-      var size = map.getSize();
-      map.panBy([size.x * 0.18, 0], { animate: false });  // 30% de la largeur vers la droite (décale le centre à gauche)
-    }, 400); // petit délai pour être sûr que tout est chargé
-  }
-});
-    chargerOffres();
+      chargerOffres();
     chargerLocationsExistantes();
 function chargerLocationsExistantes() {
   fetch(API_LOCATIONS, {
@@ -748,11 +743,19 @@ function chargerLocationsExistantes() {
     });
   });
 }
-// 1. Crée le layer ZIP
-var zipCluster = L.markerClusterGroup().addTo(map);
-    var zrrCluster = L.markerClusterGroup().addTo(map);
-    var goldCluster = L.markerClusterGroup().addTo(map);
-    var zacCluster = L.markerClusterGroup().addTo(map);
+
+// Décalage du centre vers la gauche (pour sidebar à droite)
+map.whenReady(function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const lat = parseFloat(urlParams.get('lat'));
+  const lng = parseFloat(urlParams.get('lng'));
+  if (isNaN(lat) || isNaN(lng)) {
+    setTimeout(function() {
+      var size = map.getSize();
+      map.panBy([size.x * 0.18, 0], { animate: false });  // 30% de la largeur vers la droite (décale le centre à gauche)
+    }, 400); // petit délai pour être sûr que tout est chargé
+  }
+});
 // 2. Fonction d'import du CSV ZIP
 function importerZIP(csvFile, groupLayer) {
   console.log('importerZIP appelée !');
