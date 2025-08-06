@@ -516,16 +516,6 @@ function openPostulerForm(email, contact, marker, offreTitle) {
   if (t === "Autre professionnel de santé") return "Offre d'emploi pluridisciplinaire";
   return t;
 }
-    let popupOfferIdx = null;
-map.whenReady(() => {
-  // Récupère les paramètres de l’URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const lat = parseFloat(urlParams.get('lat'));
-  const lng = parseFloat(urlParams.get('lng'));
-  const zoom = parseInt(urlParams.get('zoom')) || 15;
-  popupOfferIdx = urlParams.get('offre');
-  // Le centrage est déjà fait dans ton code
-});
     function chargerOffres() {
       fetch(API_OFFRES)
         .then(resp => resp.json())
@@ -632,7 +622,16 @@ if (popupOfferIdx !== null && String(idx) === String(popupOfferIdx)) {
     }
 
     var map = L.map('map').setView([46.7, 2.5], 6);
-
+let popupOfferIdx = null;
+map.whenReady(() => {
+  // Récupère les paramètres de l’URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const lat = parseFloat(urlParams.get('lat'));
+  const lng = parseFloat(urlParams.get('lng'));
+  const zoom = parseInt(urlParams.get('zoom')) || 15;
+  popupOfferIdx = urlParams.get('offre');
+  // Le centrage est déjà fait dans ton code
+});
 window.onload = function() {
   document.getElementById('rechercheCommune').addEventListener('mousedown', function(e) {
     e.stopPropagation();
