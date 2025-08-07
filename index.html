@@ -1581,15 +1581,16 @@ document.body.addEventListener('click', function(e) {
       menu.style.display = 'none'; menu.innerHTML = ''; return;
     }
     // Détection mobile (empêche l’appel sur desktop !)
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (navigator.share && isMobile) {
-      navigator.share({
-        title: "Offre médicale FarwestMed",
-        text: "Découvre cette offre sur FarwestMed :",
-        url: url
-      }).catch(()=>{});
-      return;
-    }
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+if (navigator.share && isMobile && !isIOS) {
+  navigator.share({
+    title: "Offre médicale FarwestMed",
+    text: "Découvre cette offre sur FarwestMed :",
+    url: url
+  }).catch(()=>{});
+  return;
+}
     // Desktop
     menu.innerHTML = `
       <div style="background:#fffbe7;border:1px solid #bbe7ff;padding:10px 15px;border-radius:12px;box-shadow:0 4px 12px #0002;position:absolute;right:0;top:30px;">
