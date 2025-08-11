@@ -377,7 +377,7 @@
     <span style="margin-left:1em;">
       <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" 
            style="height:27px;vertical-align:middle;margin-right:4px;">
-      <b>Communes ZRR</b> :
+      <b>Communes ZFRR</b> :
       Zones de Revitalisation Rurale (primes fiscales, exonérations d’impôts, aides cumulables avec ZIP).
     </span><br>
     <span style="margin-left:1em;">
@@ -388,7 +388,7 @@
     </span><br>
     <span style="margin-left:1em;">
   <span style="font-size:1.32em;vertical-align:middle;margin-right:4px;">⭐</span>
-  <b>Communes GOLD</b> (<b>ZIP + ZRR</b>) :
+  <b>Communes GOLD</b> (<b>ZIP + ZFRR</b>) :
   cumulent tous les avantages !
 </span>
   </span>
@@ -1121,8 +1121,8 @@ document.addEventListener('mousedown', function(e) {
 // 4. Ajoute le contrôle de calque
 L.control.layers(null, {
   'Communes ZIP': zipCluster,
-  'Communes ZRR': zrrCluster,
-  'Communes GOLD: ZIP+ZRR': goldCluster,
+  'Communes ZFRR': zrrCluster,
+  'Communes GOLD: ZIP+ZFRR': goldCluster,
   'Communes ZAC': zacCluster,
   '🟣 Candidatures (CV)': candidatsLayer
 }, { position: 'topleft' }).addTo(map);
