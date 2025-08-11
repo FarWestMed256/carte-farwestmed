@@ -10,7 +10,7 @@
         style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://widget.cloudinary.com;
         img-src 'self' data: https://cdn.jsdelivr.net https://res.cloudinary.com https://unpkg.com https://lh3.googleusercontent.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://raw.githubusercontent.com;
         frame-src https://www.google.com https://widget.cloudinary.com https://upload-widget.cloudinary.com;
-        connect-src 'self' https://api.sheetbest.com https://app.nocodb.com https://api-adresse.data.gouv.fr https://res.cloudinary.com https://widget.cloudinary.com https://upload-widget.cloudinary.com https://www.google.com https://www.gstatic.com https://raw.githubusercontent.com;
+        connect-src 'self' https://api.sheetbest.com https://app.nocodb.com https://api-adresse.data.gouv.fr https://res.cloudinary.com https://widget.cloudinary.com https://upload-widget.cloudinary.com https://www.google.com https://www.gstatic.com https://raw.githubusercontent.com https://docs.google.com https://docs.googleusercontent.com;        
         font-src 'self' https://cdn.jsdelivr.net;
         object-src 'none';
         base-uri 'self';
@@ -512,6 +512,36 @@ const iconesTypeOffre = {
     // URLs d'API Sheet.best pour chaque sheet
     const API_OFFRES = "https://api.sheetbest.com/sheets/c6bdfcfd-13c2-4f7e-8b26-4fd3f0be5068";
     const API_CANDIDATURES = "https://api.sheetbest.com/sheets/fea9ad93-6045-46ef-af9d-9ed93a9f5a4c";
+    // LECTURE (GET) des offres via CSV public Google Sheets
+const CSV_OFFRES_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuVlH3Pg3XsXBZf9LKYAI-vrGL5Mln9HsAnHyQ1tomqhXeTIF825awcH1ohzxcFl_DtCDyLwTluEqz/pub?gid=0&single=true&output=csv";
+    function toNumber(v){
+  if (v == null) return null;
+  const n = Number(String(v).trim().replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
+function isPubliee(s){
+  return String(s || "")
+    .normalize("NFKD").replace(/\p{Diacritic}/gu,"")
+    .trim().toLowerCase() === "publiee";
+}
+function normalizeOffre(row){
+  // Harmonise les colonnes issues du CSV
+  const lat = toNumber(row["Latitude"] ?? row["lat"]);
+  const lng = toNumber(row["Longitude"] ?? row["lng"]);
+  return {
+    ...row,
+    Latitude: lat,
+    Longitude: lng,
+    Statut: (row["Statut"] ?? "").toString().trim(),
+    TitreOffre: row["Titre de l’offre"] ?? row["Titre de l'offre"] ?? row["Titre"] ?? "",
+    NomStruct: row["Nom de la struct"] ?? row["Nom de la structure"] ?? "",
+    Adresse: row["Adresse"] ?? "",
+    Description: row["Description"] ?? "",
+    Email: row["Adresse Email"] ?? row["Email"] ?? "",
+    Contact: row["Contact"] ?? "",
+    Photos: row["Photos"] ?? ""
+  };
+}
 const API_LOCATIONS = "https://app.nocodb.com/api/v2/tables/ml3ezzqhxcfuhpi/records";
 const API_TOKEN = "zuBtJi0p7vALQo2W_HTWzvaYRxyyQKOhRaLsrNU4";
     // === CANDIDATURES (NocoDB) ===
@@ -596,98 +626,108 @@ function openPostulerForm(email, contact, marker, offreTitle) {
   return t;
 }
     function chargerOffres() {
-      fetch(API_OFFRES)
-        .then(resp => resp.json())
-        .then(data => {
-          data.forEach(function(offre, idx) {
-            if ((offre.Statut || "").toLowerCase() !== "publiée") return;
-            if (!offre.Latitude || !offre.Longitude) return;
-            let gallery = "";
-            if (offre["Photos"]) {
-              let urls = offre["Photos"].split(",");
-              gallery = '<div class="photo-gallery">' +
-                urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
-                '</div>';
-            }
-            var postulerId = `btn-postuler-${idx}`;
-            const emojisTypeOffre = {
-  "Médecin généraliste": "🩺",
-  "Médecin spécialiste": "🩻",
-  "Kinésithérapeute": "💪",
-  "Sage-femme": "🤱",
-  "Infirmier(e) diplômé(e) d’État (IDE)": "💉",
-  "Infirmier(e) Asalée": "💉",
-  "Orthophoniste": "🗣️",
-  "Orthoptiste": "👁️",
-  "Psychologue": "🧠",
-  "Ergothérapeute": "🖐️",
-  "Pédicure-podologue": "🦶",
-  "Diététicien(ne)": "🥗",
-  "Psychomotricien(ne)": "🤸",
-  "Ostéopathe": "👐",
-  "Chirurgien-dentiste": "🦷",
-  "Ophtalmologiste": "👓",
-  "Pharmacien(ne)": "💊",
-  "Secrétaire médical(e)": "🗂️",
-  "Assistant(e) médical(e)": "👩‍💼",
-  "Autre professionnel de santé": "⚕️",
-  "Offre d'emploi pluridisciplinaire": "👩🏻‍⚕️"  // ou choisis l'emoji qui te plaît le plus
-};
-var typeOffre = normaliserTypeOffre(offre["Titre de l’offre"]);
-var emoji = emojisTypeOffre[typeOffre] || "❓";
-var popupHtml =
-  `<b>${typeOffre || ''}</b><br>
-   ${offre["Nom de la struct"] || ''}<br>
-   ${offre["Adresse"] || ''}<br>
-   ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(offre["Description"] || '')))}<br>
-   ${gallery}
-   <b>Contact :</b> ${offre["Contact"] || ''}<br>
-   ${offre["Adresse Email"] ? `<b>Email :</b> ${offre["Adresse Email"]}<br>` : ""}
-   <button type="button" class="btn-postuler" id="${postulerId}"
-     data-email="${offre["Adresse Email"] || ''}" 
-     data-contact="${offre["Contact"] || ''}">Postuler à cette offre</button>
-   <button type="button" class="btn-partager"
-     data-lat="${offre.Latitude}" data-lng="${offre.Longitude}" data-type="offre"
-     style="margin-left:10px;">Partager</button>
-   <span class="popup-share-menu" style="display:none;position:relative;z-index:9999;"></span>
-  `;
+  const url = CSV_OFFRES_URL + "&t=" + Date.now(); // anti-cache
+  fetch(url, { cache: "no-store" })
+    .then(resp => {
+      if (!resp.ok) throw new Error("CSV fetch failed: " + resp.status);
+      return resp.text();
+    })
+    .then(csvText => {
+      const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+      if (parsed.errors?.length) console.warn("CSV parse warnings:", parsed.errors.slice(0,3));
+      const rows = parsed.data.map(normalizeOffre);
 
-// Création d’un DivIcon Leaflet (affiche l’émoji dans un rond blanc)
-var customIcon = L.divIcon({
-  html: `<div style="
-    font-size:2.2em;
-    width:46px;height:46px;
-    border-radius:50%;
-    background:#fff;
-    border:2px solid #eee;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 1px 5px #0002;
-  ">${emoji}</div>`,
-  className: '',   // pas de classe personnalisée (on utilise le style inline)
-  iconSize: [46,46],
-  iconAnchor: [23,46],
-  popupAnchor: [0,-46]
-});
-var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon}).addTo(map).bindPopup(popupHtml);
+      console.log("Total lignes CSV:", rows.length);
+      let shown = 0;
 
-            marker.on("popupopen", function() {
-              var btn = document.getElementById(postulerId);
-              if(btn) {
-                btn.onclick = function() {
-                  openPostulerForm(
-                    btn.getAttribute("data-email"), 
-                    btn.getAttribute("data-contact"), 
-                    marker, 
-                    offre["Titre de l’offre"] || ""
-                  );
-                }
-              }
-            });
-          });
+      rows.forEach(function(offre, idx) {
+        // Filtre : n’affiche que les offres publiées
+        if (!isPubliee(offre.Statut)) return;
+
+        if (!Number.isFinite(offre.Latitude) || !Number.isFinite(offre.Longitude)) {
+          console.warn("Coordonnées manquantes, skip:", offre.TitreOffre || offre.NomStruct || offre.Adresse);
+          return;
+        }
+
+        // Galerie photos
+        let gallery = "";
+        if (offre.Photos) {
+          let urls = String(offre.Photos).split(",");
+          gallery = '<div class="photo-gallery">' +
+            urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
+            '</div>';
+        }
+
+        // Emoji par type
+        const emojisTypeOffre = {
+          "Médecin généraliste": "🩺","Médecin spécialiste": "🩻","Kinésithérapeute": "💪","Sage-femme": "🤱",
+          "Infirmier(e) diplômé(e) d’État (IDE)": "💉","Infirmier(e) Asalée": "💉","Orthophoniste": "🗣️","Orthoptiste": "👁️",
+          "Psychologue": "🧠","Ergothérapeute": "🖐️","Pédicure-podologue": "🦶","Diététicien(ne)": "🥗","Psychomotricien(ne)": "🤸",
+          "Ostéopathe": "👐","Chirurgien-dentiste": "🦷","Ophtalmologiste": "👓","Pharmacien(ne)": "💊",
+          "Secrétaire médical(e)": "🗂️","Assistant(e) médical(e)": "👩‍💼","Autre professionnel de santé": "⚕️",
+          "Offre d'emploi pluridisciplinaire": "👩🏻‍⚕️"
+        };
+        var typeOffre = normaliserTypeOffre(offre.TitreOffre);
+        var emoji = emojisTypeOffre[typeOffre] || "❓";
+
+        // Contenu du popup
+        var postulerId = `btn-postuler-${idx}`;
+        var popupHtml =
+          `<b>${typeOffre || ''}</b><br>
+           ${offre.NomStruct || ''}<br>
+           ${offre.Adresse || ''}<br>
+           ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(offre.Description || '')))}<br>
+           ${gallery}
+           <b>Contact :</b> ${offre.Contact || ''}<br>
+           ${offre.Email ? `<b>Email :</b> ${offre.Email}<br>` : ""}
+           <button type="button" class="btn-postuler" id="${postulerId}"
+             data-email="${offre.Email || ''}" 
+             data-contact="${offre.Contact || ''}">Postuler à cette offre</button>
+           <button type="button" class="btn-partager"
+             data-lat="${offre.Latitude}" data-lng="${offre.Longitude}" data-type="offre"
+             style="margin-left:10px;">Partager</button>
+           <span class="popup-share-menu" style="display:none;position:relative;z-index:9999;"></span>`;
+
+        // Icône personnalisée
+        var customIcon = L.divIcon({
+          html: `<div style="
+            font-size:2.2em;width:46px;height:46px;border-radius:50%;
+            background:#fff;border:2px solid #eee;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px #0002;
+          ">${emoji}</div>`,
+          className: '', iconSize: [46,46], iconAnchor: [23,46], popupAnchor: [0,-46]
         });
-    }
+
+        var marker = L.marker([offre.Latitude, offre.Longitude], {icon: customIcon})
+          .addTo(map)
+          .bindPopup(popupHtml);
+
+        marker.on("popupopen", function() {
+          var btn = document.getElementById(postulerId);
+          if (btn) {
+            btn.onclick = function() {
+              openPostulerForm(
+                btn.getAttribute("data-email"), 
+                btn.getAttribute("data-contact"), 
+                marker, 
+                typeOffre || ""
+              );
+            };
+          }
+        });
+
+        shown++;
+      });
+
+      console.log("Marqueurs affichés:", shown);
+      if (shown === 0) {
+        console.warn("Aucun marqueur affiché. Vérifie les noms de colonnes Latitude/Longitude ou leur format.");
+      }
+    })
+    .catch(err => {
+      console.error("Chargement Google Sheets échoué:", err);
+      alert("Impossible de charger les offres pour le moment.");
+    });
+}
 
     var map = L.map('map').setView([46.7, 2.5], 6);
 window.map = map; // permet d'y accéder depuis d'autres fonctions
