@@ -510,7 +510,7 @@ const iconesTypeOffre = {
   "Autre professionnel de santé": "https://cdn.jsdelivr.net/gh/steven2358/medical-icons/svg/doctor.svg"
 };
     // URLs d'API Sheet.best pour chaque sheet
-    const API_OFFRES = "https://script.google.com/macros/s/AKfycbwZX_h44uOyAQ6noQPynE61YVTD4uQQhNO6dxvwv_DprOBkY6-DCeZDPSiRPUOtlkvW/exec";
+    const API_OFFRES = "https://script.google.com/macros/s/AKfycbynuVzqKt5MBXPHquxGDzvne71pTlIsORW4LZya3i5dsEMXwrGk_qwDQHYqXFKJ9Z7D/exec";
     const API_CANDIDATURES = "https://api.sheetbest.com/sheets/fea9ad93-6045-46ef-af9d-9ed93a9f5a4c";
     // LECTURE (GET) des offres via CSV public Google Sheets
 const CSV_OFFRES_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuVlH3Pg3XsXBZf9LKYAI-vrGL5Mln9HsAnHyQ1tomqhXeTIF825awcH1ohzxcFl_DtCDyLwTluEqz/pub?gid=0&single=true&output=csv";
@@ -1287,10 +1287,10 @@ if (!recaptchaResponse) {
 }
 
         fetch(API_OFFRES, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-        })
+  method: "POST",
+  headers: { "Content-Type": "text/plain;charset=utf-8" },
+  body: JSON.stringify(data)
+})
         .then(response => {
           if (response.ok) {
   let gallery = "";
