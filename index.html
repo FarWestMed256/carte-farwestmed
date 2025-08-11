@@ -592,33 +592,6 @@ function chargerCandidats() {
     }
     window.showLightbox = showLightbox;
 
-function openPostulerForm(email, contact, marker, offreTitle) {
-  setTimeout(function() {
-    var popupForm =
-      '<b>Postuler à cette offre</b><br>'+
-      'Votre nom :<br><input type="text" id="candidatNom"><br>'+
-      'Votre email :<br><input type="email" id="candidatEmail"><br>'+
-      'Message :<br><textarea id="candidatMsg"></textarea><br>'+
-      '<div class="g-recaptcha" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div>'+
-      '<button type="button" id="sendCandidature" '+
-        'data-email="'+(email||'')+'" data-contact="'+(contact||'')+'">Envoyer</button>'+
-      '<button type="button" id="cancelCandidature" style="margin-left:8px;">Annuler</button>';
-
-    marker.setPopupContent(popupForm);
-
-    setTimeout(function() {
-      var btnCancel = document.getElementById('cancelCandidature');
-      if (btnCancel) btnCancel.onclick = function() {
-        if (window.grecaptcha) grecaptcha.reset();
-        if (window.map) window.map.closePopup();
-      };
-
-      if (window.grecaptcha && document.querySelector('#candidatNom') && document.querySelector('.g-recaptcha')) {
-        grecaptcha.render(document.querySelector('.g-recaptcha'));
-      }
-    }, 200);
-  }, 100);
-}
     function normaliserTypeOffre(type) {
   let t = (type || "").trim();
   if (t === "Aide-soignant(e)") return "Autre professionnel de santé";
@@ -701,19 +674,7 @@ function openPostulerForm(email, contact, marker, offreTitle) {
           .addTo(map)
           .bindPopup(popupHtml);
 
-        marker.on("popupopen", function() {
-          var btn = document.getElementById(postulerId);
-          if (btn) {
-            btn.onclick = function() {
-              openPostulerForm(
-                btn.getAttribute("data-email"), 
-                btn.getAttribute("data-contact"), 
-                marker, 
-                typeOffre || ""
-              );
-            };
-          }
-        });
+  
 
         shown++;
       });
@@ -1590,143 +1551,6 @@ if (btnCand) {
 }, 600);
 });
    
-    // PATCH ULTIME : Listener global pour bouton Envoyer (candidature)
-    document.body.addEventListener('click', function(e) {
-      if (e.target && e.target.id === "sendCandidature") {
-           let recaptchaResponse = grecaptcha.getResponse();
-   if (!recaptchaResponse) {
-  showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
-  return;
-}
-if (!canSubmit("candidatureForm", 5, 60)) {
-  showCarteNotification("⚠️ Trop de candidatures envoyées depuis ce navigateur ! Réessaye dans une heure.");
-  return;
-}
-    if (e.target.disabled) return;
-    e.target.disabled = true;
-
-        var nom = document.getElementById('candidatNom') ? document.getElementById('candidatNom').value : "";
-        var emailCand = document.getElementById('candidatEmail') ? document.getElementById('candidatEmail').value : "";
-        var msg = document.getElementById('candidatMsg') ? document.getElementById('candidatMsg').value : "";
-        var now = new Date();
-        var dateStr = now.toISOString().slice(0, 19).replace('T', ' ');
-
-        var titre = "";
-        var titreElem = document.querySelector(".leaflet-popup-content b");
-        if (titreElem) titre = titreElem.textContent || "";
-
-        var email = e.target.getAttribute("data-email") || "";
-        var contact = e.target.getAttribute("data-contact") || "";
-
-        var data = {
-          "Nom offre": titre,
-          "Nom du candidat": nom,
-          "Email du candidat": emailCand,
-          "Message": msg,
-          "Email employeur": email,
-          "Contact employeur": contact,
-          "Date candidature": dateStr
-        };
-
-        fetch(API_CANDIDATURES, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-        })
-        .then(response => {
-          if (response.ok) {
-            alert("Votre candidature a bien été enregistrée !");
-            var closeBtn = document.querySelector('.leaflet-popup-close-button');
-            if (closeBtn) closeBtn.click();
-          } else {
-            alert("Erreur lors de la candidature.");
-          }
-          e.target.disabled = false;
-        })
-        .catch(function() {
-          alert("Erreur lors de la candidature (réseau).");
-          e.target.disabled = false;
-        });
-      }
-    });
-    // ----- INTÉRÊT POUR LOCATION -----
-    document.body.addEventListener('click', function(e) {
-  if (e.target && e.target.classList.contains('btn-interesse-location')) {
-    let btn = e.target;
-    let popupForm = `
-      <b>Je suis intéressé(e) par ce local</b><br>
-      Votre nom :<br><input type="text" id="interesseNom"><br>
-      Votre email :<br><input type="email" id="interesseEmail"><br>
-      Message :<br><textarea id="interesseMsg"></textarea><br>
-      <div class="g-recaptcha" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div>
-      <button type="button" id="sendInteresseLocation"
-        data-email="${btn.getAttribute('data-email') || ""}"
-        data-contact="${btn.getAttribute('data-contact') || ""}"
-        data-adresse="${btn.getAttribute('data-adresse') || ""}"
-        data-description="${btn.getAttribute('data-description') || ""}"
-        style="background:#B6E3FF;color:#095b89;padding:6px 18px;font-size:1em;border-radius:8px;border:none;cursor:pointer;margin-top:8px;">
-        Envoyer ma demande
-      </button>
-      <button type="button" id="cancelInteresseLocation" style="margin-left:8px;">Annuler</button>
-    `;
-    let popupContent = btn.closest('.leaflet-popup-content');
-    if (popupContent) popupContent.innerHTML = popupForm;
-   setTimeout(() => {
-  let btnCancel = document.getElementById('cancelInteresseLocation');
-  if (btnCancel) btnCancel.onclick = function() {
-    let popup = btn.closest('.leaflet-popup-content');
-    if (popup) window.map.closePopup();
-    grecaptcha.reset();
-  };
-  // ⬇️ AJOUTE CE BLOC : 
-  if (window.grecaptcha && document.querySelector('#interesseNom') && document.querySelector('.g-recaptcha')) {
-    grecaptcha.render(document.querySelector('.g-recaptcha'));
-  }
-}, 100);
-  }
-});
-
-document.body.addEventListener('click', function(e) {
-  if (e.target && e.target.id === "sendInteresseLocation") {
-     let recaptchaResponse = grecaptcha.getResponse();
-    if (!recaptchaResponse) {
-      showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
-      return;
-    }
-    if (!canSubmit("interetLocationForm", 5, 60)) {
-  showCarteNotification("⚠️ Trop de demandes envoyées depuis ce navigateur ! Réessaye dans une heure.");
-  return;
-}
-    let nom = document.getElementById('interesseNom').value.trim();
-    let email = document.getElementById('interesseEmail').value.trim();
-    let msg = document.getElementById('interesseMsg').value.trim();
-    let now = new Date().toISOString();
-    // NOUVEAU : récupère l’email du proprio transmis via le bouton
-    let contactProprio = e.target.getAttribute("data-email") || "";
-
-    fetch('https://app.nocodb.com/api/v2/tables/ml293gbtbvnhsyf/records', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "xc-token": "zuBtJi0p7vALQo2W_HTWzvaYRxyyQKOhRaLsrNU4"
-      },
-      body: JSON.stringify({
-        "Nom": nom,
-        "Email": email,
-        "Message": msg,
-        "Contact propriétaire": contactProprio,  // <-- c’est ici la correction !
-        "Date": now
-      })
-    })
-    .then(r => r.json())
-    .then(resp => {
-      showCarteNotification("✅ Votre demande a été transmise !");
-      grecaptcha.reset();
-      setTimeout(() => { window.map.closePopup(); }, 1200);
-    })
-    .catch(() => showCarteNotification("❌ Erreur lors de l'envoi."));
-  }
-});
   </script>
   <script>
 function toggleSidebar() {
@@ -1794,6 +1618,51 @@ if (navigator.share && isMobile && !isIOS) {
   }
 });
    </script>
+  <script>
+  function appendContactBlock(btnEl, title) {
+  const email = btnEl.getAttribute('data-email') || '';
+  const contact = btnEl.getAttribute('data-contact') || '';
+  const popup = btnEl.closest('.leaflet-popup-content');
+  if (!popup) return;
+
+  // évite les doublons
+  let existing = popup.querySelector('.fwmed-contact-block');
+  if (!existing) {
+    existing = document.createElement('div');
+    existing.className = 'fwmed-contact-block';
+    existing.style.marginTop = '10px';
+    existing.style.padding = '10px 12px';
+    existing.style.border = '1px solid #ffe49c';
+    existing.style.background = '#fffbe7';
+    existing.style.borderRadius = '10px';
+    popup.appendChild(existing);
+  }
+
+  let html = `<b>${title}</b><br>`;
+  if (email)  html += `📧 ${email}<br>`;
+  if (contact) html += `📞 ${contact}<br>`;
+  if (!email && !contact) html += '❌ Aucun contact renseigné.';
+
+  existing.innerHTML = html;
+
+  // petit confort : scroll vers le bas du popup
+  setTimeout(()=> popup.parentElement?.scrollTo?.({ top: popup.scrollHeight, behavior: 'smooth' }), 50);
+}
+
+// Offres : "Postuler à cette offre"
+document.body.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('btn-postuler')) {
+    appendContactBlock(e.target, 'Contact :');
+  }
+});
+
+// Locations : "Ça m’intéresse"
+document.body.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('btn-interesse-location')) {
+    appendContactBlock(e.target, 'Contact propriétaire :');
+  }
+});
+</script>
    <script>
 // Patch pour propagation correcte du click natif sur mobile (iOS & Android)
 // à placer à la fin de ton code JS !
