@@ -1618,70 +1618,107 @@ function toggleSidebar() {
 }
 </script>
   <script src="https://www.google.com/recaptcha/api.js"></script>
- <script>
-document.body.addEventListener('click', function(e) {
-  if (e.target && e.target.classList.contains('btn-partager')) {
-    const btn = e.target;
-    const lat = btn.getAttribute('data-lat');
-    const lng = btn.getAttribute('data-lng');
-    const type = btn.getAttribute('data-type');
-    const zoom = 15;
-    const url = `${window.location.origin}${window.location.pathname}?lat=${lat}&lng=${lng}&zoom=${zoom}`;
-    const menu = btn.parentNode.querySelector('.popup-share-menu');
-    if (menu.style.display === 'block') {
-      menu.style.display = 'none'; menu.innerHTML = ''; return;
+<script>
+// Remplace TOUT le listener existant par ceci
+document.body.addEventListener('click', async function(e) {
+  const btn = e.target?.closest('.btn-partager');
+  if (!btn) return;
+
+  e.stopPropagation();
+
+  const lat  = btn.getAttribute('data-lat');
+  const lng  = btn.getAttribute('data-lng');
+  const zoom = 15;
+
+  // URL partage: toujours absolue
+  const base = location.origin + location.pathname;
+  const url  = `${base}?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&zoom=${zoom}`;
+
+  // Élément du petit menu (créé dans le HTML du popup)
+  const menu = btn.parentNode.querySelector('.popup-share-menu');
+
+  // Si déjà ouvert -> toggle off
+  if (menu.style.display === 'block') {
+    menu.style.display = 'none';
+    menu.innerHTML = '';
+    return;
+  }
+
+  // 1) Web Share natif SI ET SEULEMENT SI on n'est PAS dans un iframe
+  const canWebShare = !!navigator.share && (window.top === window.self);
+  if (canWebShare) {
+    try {
+      await navigator.share({
+        title: 'FarWestMed',
+        text: 'Découvre cette annonce sur FarWestMed :',
+        url
+      });
+      return; // succès natif => on sort
+    } catch (_) {
+      // si l’utilisateur annule, on ne fait rien; si ça jette, on tombera en fallback
     }
-    // Détection mobile (empêche l’appel sur desktop !)
-    // Partage natif si dispo (mobile Android & iOS)
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-if (navigator.share && isMobile) {
-  navigator.share({
-    title: "Offre médicale FarwestMed",
-    text: "Découvre cette offre sur FarwestMed :",
-    url: url
-  }).catch(()=>{});
-  return;
-}
-    // Desktop
-    menu.innerHTML = `
-      <div style="background:#fffbe7;border:1px solid #bbe7ff;padding:10px 15px;border-radius:12px;box-shadow:0 4px 12px #0002;position:absolute;right:0;top:30px;">
-        <b>Partager via :</b><br>
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank">Facebook</a> &nbsp;|&nbsp;
-        <a href="https://wa.me/?text=${encodeURIComponent(url)}" target="_blank">WhatsApp</a> &nbsp;|&nbsp;
-        <a href="mailto:?subject=Offre%20FarwestMed&body=${encodeURIComponent(url)}">Mail</a>
-        <br>
-        <button onclick="navigator.clipboard.writeText('${url}');this.textContent='Lien copié !';event.stopPropagation();" style="font-size:0.95em;margin-top:6px;">Copier le lien</button>
-      </div>
-    `;
-    menu.style.display = 'block';
+  }
 
-// ➜ Scroll tout en bas du popup (mobile + desktop)
-setTimeout(() => {
-  const content = btn.closest('.leaflet-popup-content');
-  const wrapper = content?.parentElement; // .leaflet-popup-content-wrapper
+  // 2) Fallback (desktop ou iOS en iframe)
+  menu.innerHTML = `
+    <div style="background:#fffbe7;border:1px solid #bbe7ff;padding:10px 15px;border-radius:12px;box-shadow:0 4px 12px #0002;position:absolute;right:0;top:30px;">
+      <b>Partager via :</b><br>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank" rel="noopener">Facebook</a> &nbsp;|&nbsp;
+      <a href="https://wa.me/?text=${encodeURIComponent(url)}" target="_blank" rel="noopener">WhatsApp</a> &nbsp;|&nbsp;
+      <a href="mailto:?subject=Annonce%20FarWestMed&body=${encodeURIComponent(url)}">Mail</a>
+      <br>
+      <button style="font-size:0.95em;margin-top:6px;"
+              onclick="navigator.clipboard.writeText('${url}').then(()=>{this.textContent='Lien copié !'})">
+        Copier le lien
+      </button>
+    </div>
+  `;
+  menu.style.display = 'block';
 
-  // Choisit l’élément qui a un vrai scroll
-  const scroller =
-    (content && content.scrollHeight > content.clientHeight && content) ||
-    (wrapper && wrapper.scrollHeight > wrapper.clientHeight && wrapper) ||
-    content || wrapper;
+  // 3) S'assurer que le menu est VISIBLE :
+  //    a) on scrolle l'intérieur du popup (wrapper)
+  //    b) si le bas du popup dépasse l'écran, on pan la carte vers le haut
+  requestAnimationFrame(() => {
+    const content = btn.closest('.leaflet-popup-content');
+    const wrapper = content ? content.parentElement : null; // .leaflet-popup-content-wrapper
+    const scroller =
+      (content && content.scrollHeight > content.clientHeight && content) ||
+      (wrapper && wrapper.scrollHeight > wrapper.clientHeight && wrapper) ||
+      wrapper || content;
 
-  scroller?.scrollTo?.({ top: scroller.scrollHeight, behavior: 'smooth' });
-}, 60);
+    try {
+      scroller && (scroller.scrollTop = scroller.scrollHeight);
+    } catch {}
 
-// ➜ Scroll tout en bas du popup pour bien voir le menu de partage
-    setTimeout(()=>{
-      function closeMenu(ev) {
-        if (!menu.contains(ev.target) && ev.target!==btn) {
-          menu.style.display = 'none'; menu.innerHTML = '';
-          document.removeEventListener('mousedown', closeMenu);
+    // Pan de la carte si le popup déborde en bas
+    try {
+      const popupEl = btn.closest('.leaflet-popup');
+      if (popupEl) {
+        const rect = popupEl.getBoundingClientRect();
+        const pad  = 10;
+        const overflow = rect.bottom - (window.innerHeight - pad);
+        if (overflow > 0 && window.map && typeof window.map.panBy === 'function') {
+          window.map.panBy([0, -(overflow + 20)], { animate: true });
         }
       }
-      document.addEventListener('mousedown', closeMenu);
-    }, 100);
-  }
+    } catch {}
+  });
+
+  // 4) clic hors du menu => le fermer
+  setTimeout(() => {
+    function closeMenu(ev) {
+      if (!menu.contains(ev.target) && ev.target !== btn) {
+        menu.style.display = 'none';
+        menu.innerHTML = '';
+        document.removeEventListener('mousedown', closeMenu, true);
+        document.removeEventListener('touchstart', closeMenu, true);
+      }
+    }
+    document.addEventListener('mousedown', closeMenu, true);
+    document.addEventListener('touchstart', closeMenu, true);
+  }, 80);
 });
-   </script>
+</script>
   <script>
   function appendContactBlock(btnEl, title) {
   const email = btnEl.getAttribute('data-email') || '';
