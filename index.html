@@ -294,15 +294,6 @@
   #rechercheCommune { width: 78vw; font-size: 0.98em; }
   #footer-infos { margin-top: 2vw; margin-left: 0; text-align: center;}
 }
-      @media (max-width: 700px) {
-  .leaflet-popup { width: min(92vw, 480px) !important; }
-  .leaflet-popup-content-wrapper { overflow: hidden; } /* garde les bords arrondis */
-  .leaflet-popup-content {
-    max-height: calc(100dvh - 160px); /* laisse de la carte visible + footer */
-    overflow: auto;
-    -webkit-overflow-scrolling: touch; /* scroll iOS fluide */
-  }
-}
     .btn-partager {
   background: linear-gradient(90deg, #b6e3ff 60%, #e5f5ff 100%);
   color: #095b89;
@@ -709,18 +700,6 @@ window.addEventListener('resize', () => map.invalidateSize());
 window.addEventListener('orientationchange', () => {
   setTimeout(() => map.invalidateSize(), 250);
 });
-    // Mobile-specific popup defaults
-if (window.matchMedia('(max-width: 700px)').matches) {
-  const footerH = parseInt(getComputedStyle(document.documentElement)
-                    .getPropertyValue('--footer-h')) || 70;
-
-  L.Popup.prototype.options.maxWidth = Math.min(window.innerWidth * 0.92, 480);
-  L.Popup.prototype.options.keepInView = true;
-  L.Popup.prototype.options.autoPan = true;
-  // Leave some space for the layer control (top-left) and for the footer/search bar (bottom)
-  L.Popup.prototype.options.autoPanPaddingTopLeft = [10, 80];
-  L.Popup.prototype.options.autoPanPaddingBottomRight = [10, footerH + 24];
-}
     var candidatsLayer = L.layerGroup().addTo(map);
 window.onload = function() {
   document.getElementById('rechercheCommune').addEventListener('mousedown', function(e) {
@@ -1743,24 +1722,6 @@ document.body.addEventListener('click', function(e) {
       }
       if (arrow) arrow.innerHTML = '&#9654;'; // ▶
     });
-    document.addEventListener('touchstart', function(e){
-  const box = e.target.closest('.leaflet-popup-content');
-  if (!box) return;
-  const startY = e.touches[0].clientY;
-  const startTop = box.scrollTop;
-  const onMove = (m) => {
-    const dy = m.touches[0].clientY - startY;
-    // If the content is scrolled to top and user swipes down, close
-    if (startTop === 0 && dy > 60) {
-      map.closePopup();
-      cleanup();
-    }
-  };
-  const cleanup = () => {
-    document.removeEventListener('touchmove', onMove);
-  };
-  document.addEventListener('touchmove', onMove, {passive:true});
-}, {passive:true});
   </script>
 </body>
 </html>
