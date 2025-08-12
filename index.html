@@ -1655,14 +1655,21 @@ if (navigator.share && isMobile && !isIOS) {
     `;
     menu.style.display = 'block';
 
-// ➜ Scroll tout en bas du popup pour bien voir le menu de partage
+// ➜ Scroll tout en bas du popup (mobile + desktop)
 setTimeout(() => {
-  const popupContent = btn.closest('.leaflet-popup-content');
-  const scroller = popupContent?.parentElement;
-  if (scroller) {
-    scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
-  }
-}, 50);
+  const content = btn.closest('.leaflet-popup-content');
+  const wrapper = content?.parentElement; // .leaflet-popup-content-wrapper
+
+  // Choisit l’élément qui a un vrai scroll
+  const scroller =
+    (content && content.scrollHeight > content.clientHeight && content) ||
+    (wrapper && wrapper.scrollHeight > wrapper.clientHeight && wrapper) ||
+    content || wrapper;
+
+  scroller?.scrollTo?.({ top: scroller.scrollHeight, behavior: 'smooth' });
+}, 60);
+
+// ➜ Scroll tout en bas du popup pour bien voir le menu de partage
     setTimeout(()=>{
       function closeMenu(ev) {
         if (!menu.contains(ev.target) && ev.target!==btn) {
