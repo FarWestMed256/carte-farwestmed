@@ -161,7 +161,6 @@
 #sidebar-mode-emploi.closed { width: 0; min-width: 0;}
 #sidebar-mode-emploi.closed .sidebar-content { display: none;}
 #toggle-arrow { transition: transform 0.2s; }
-#sidebar-mode-emploi.open #toggle-arrow { transform: rotate(180deg); }
     /* Pour forcer les popups devant tout le reste */
 .leaflet-popup,
 .leaflet-popup-pane,
@@ -358,9 +357,9 @@
 </div>
 <!-- Ici la carte s’arrête -->
    <button class="sidebar-toggle" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Afficher/masquer le mode d'emploi">
-  <span id="toggle-arrow">&#9664;</span>
+  <span id="toggle-arrow">&#9654;</span> <!-- ▶ flèche vers la droite -->
 </button>
-  <div id="sidebar-mode-emploi" class="sidebar open">
+  <div id="sidebar-mode-emploi" class="sidebar closed">
   <div class="sidebar-content">
     <h3>🗺️ Mode d’emploi de la carte</h3>
     <ul style="list-style:none;padding:0;">
@@ -692,6 +691,7 @@ function chargerCandidats() {
 
     var map = L.map('map').setView([46.7, 2.5], 6);
 window.map = map; // permet d'y accéder depuis d'autres fonctions
+    window.addEventListener('resize', () => map.invalidateSize());
     var candidatsLayer = L.layerGroup().addTo(map);
 window.onload = function() {
   document.getElementById('rechercheCommune').addEventListener('mousedown', function(e) {
@@ -735,11 +735,16 @@ map.whenReady(function() {
   const urlParams = new URLSearchParams(window.location.search);
   const lat = parseFloat(urlParams.get('lat'));
   const lng = parseFloat(urlParams.get('lng'));
+
+  // Si pas de coordonnées dans l'URL et sidebar ouverte -> décaler
   if (isNaN(lat) || isNaN(lng)) {
     setTimeout(function() {
-      var size = map.getSize();
-      map.panBy([size.x * 0.18, 0], { animate: false });  // 30% de la largeur vers la droite (décale le centre à gauche)
-    }, 400); // petit délai pour être sûr que tout est chargé
+      const sb = document.getElementById('sidebar-mode-emploi');
+      if (sb && sb.classList.contains('open')) {
+        const size = map.getSize();
+        map.panBy([size.x * 0.18, 0], { animate: false });
+      }
+    }, 400);
   }
 });
     chargerOffres();
@@ -1556,17 +1561,26 @@ if (btnCand) {
 function toggleSidebar() {
   var sb = document.getElementById('sidebar-mode-emploi');
   var btn = document.getElementById('sidebar-toggle-btn');
+  var arrow = document.getElementById('toggle-arrow');
+
   sb.classList.toggle('open');
   sb.classList.toggle('closed');
-  // Change la flèche
-  var arrow = document.getElementById('toggle-arrow');
-  if (sb.classList.contains('open')) {
-    arrow.innerHTML = '&#9664;'; // flèche vers la gauche (fermer)
-    btn.setAttribute('aria-label', "Masquer le mode d'emploi");
-  } else {
-    arrow.innerHTML = '&#9654;'; // flèche vers la droite (ouvrir)
-    btn.setAttribute('aria-label', "Afficher le mode d'emploi");
-  }
+
+  const opened = sb.classList.contains('open');
+  arrow.innerHTML = opened ? '&#9664;' : '&#9654;'; // ◀ si ouvert, ▶ si fermé
+  btn.setAttribute('aria-label', opened ? "Masquer le mode d'emploi" : "Afficher le mode d'emploi");
+
+  // Laisse Leaflet recalculer la taille, puis ajuste légèrement la vue
+  setTimeout(function(){
+    map.invalidateSize();
+    if (opened) {
+      const size = map.getSize();
+      map.panBy([size.x * 0.12, 0], { animate: true }); // petit décalage à l’ouverture
+    } else {
+      const size = map.getSize();
+      map.panBy([-size.x * 0.12, 0], { animate: true }); // on “recolle” en fermeture
+    }
+  }, 250);
 }
 </script>
   <script src="https://www.google.com/recaptcha/api.js"></script>
@@ -1690,6 +1704,17 @@ document.body.addEventListener('click', function(e) {
   }, {passive: true});
 })();
 </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const sb = document.getElementById('sidebar-mode-emploi');
+      const arrow = document.getElementById('toggle-arrow');
+      if (sb) {
+        sb.classList.remove('open');
+        sb.classList.add('closed');
+      }
+      if (arrow) arrow.innerHTML = '&#9654;'; // ▶
+    });
+  </script>
 </body>
 </html>
 <!-- mini commit pour forcer le déploiement -->
