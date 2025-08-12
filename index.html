@@ -1654,19 +1654,15 @@ if (navigator.share && isMobile && !isIOS) {
       </div>
     `;
     menu.style.display = 'block';
-    // ➜ Scroll vers le menu de partage pour le rendre visible dans le popup
-    setTimeout(() => {
-      if (menu.scrollIntoView) {
-        menu.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
-      } else {
-        const popupContent = btn.closest('.leaflet-popup-content');
-        const scroller = popupContent?.parentElement;
-        if (scroller && popupContent) {
-          const target = popupContent.scrollHeight - scroller.clientHeight + 40;
-          scroller.scrollTo({ top: target, behavior: 'smooth' });
-        }
-      }
-    }, 30);
+
+// ➜ Scroll tout en bas du popup pour bien voir le menu de partage
+setTimeout(() => {
+  const popupContent = btn.closest('.leaflet-popup-content');
+  const scroller = popupContent?.parentElement;
+  if (scroller) {
+    scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
+  }
+}, 50);
     setTimeout(()=>{
       function closeMenu(ev) {
         if (!menu.contains(ev.target) && ev.target!==btn) {
