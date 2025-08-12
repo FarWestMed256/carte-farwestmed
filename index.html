@@ -30,7 +30,11 @@
   margin: 0; 
   position: relative; 
 }
-    #map { height: 90vh; width: 100vw; }
+    /* ===== Amélioration mobile : hauteur fiable + safe area ===== */
+:root { --footer-h: 70px; } /* Ajuste si ton footer est plus ou moins haut */
+#map { height: calc(100dvh - var(--footer-h)); } /* remplace le height: 90vh */
+#footer-bar { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+   #map { width: 100vw; }
     .photo-gallery img {max-width:140px;max-height:100px;margin:3px;border-radius:8px; cursor:pointer;}
     .btn-postuler {
       font-size: 1.1em;
@@ -691,7 +695,11 @@ function chargerCandidats() {
 
     var map = L.map('map').setView([46.7, 2.5], 6);
 window.map = map; // permet d'y accéder depuis d'autres fonctions
-    window.addEventListener('resize', () => map.invalidateSize());
+
+window.addEventListener('resize', () => map.invalidateSize());
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => map.invalidateSize(), 250);
+});
     var candidatsLayer = L.layerGroup().addTo(map);
 window.onload = function() {
   document.getElementById('rechercheCommune').addEventListener('mousedown', function(e) {
