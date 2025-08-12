@@ -173,6 +173,16 @@
 .leaflet-container .leaflet-popup-content {
   z-index: 99999 !important;
 }
+   .leaflet-popup-content {
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+} 
+    /* Permet un scroll interne fluide dans les popups très longs */
+.leaflet-popup-content-wrapper {
+  max-height: min(68vh, 520px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
 /* Place les contrôles et la barre de recherche en-dessous du popup */
 .leaflet-top, .leaflet-bottom, .leaflet-control,
@@ -700,6 +710,17 @@ window.addEventListener('resize', () => map.invalidateSize());
 window.addEventListener('orientationchange', () => {
   setTimeout(() => map.invalidateSize(), 250);
 });
+    // Mobile-specific popup defaults
+if (window.matchMedia('(max-width: 700px)').matches) {
+  const footerH = parseInt(getComputedStyle(document.documentElement)
+                    .getPropertyValue('--footer-h')) || 70;
+
+  L.Popup.prototype.options.maxWidth = Math.min(window.innerWidth * 0.92, 480);
+  L.Popup.prototype.options.autoPan = true;          // centre à l’ouverture
+  L.Popup.prototype.options.keepInView = false;      // ⬅️ permet de panner librement ensuite
+  L.Popup.prototype.options.autoPanPaddingTopLeft = [10, 80];
+  L.Popup.prototype.options.autoPanPaddingBottomRight = [10, footerH + 24];
+}
     var candidatsLayer = L.layerGroup().addTo(map);
 window.onload = function() {
   document.getElementById('rechercheCommune').addEventListener('mousedown', function(e) {
@@ -713,6 +734,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
+    map.on('popupopen', (e) => {
+  const el = e?.popup?.getElement()?.querySelector('.leaflet-popup-content');
+  if (el) el.scrollTop = 0;
+});
+
 map.whenReady(function() {
   const urlParams = new URLSearchParams(window.location.search);
   const lat = parseFloat(urlParams.get('lat'));
