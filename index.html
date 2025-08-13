@@ -592,7 +592,7 @@ const CSV_OFFRES_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuVlH3P
 }
 function isPubliee(s){
   return String(s || "")
-    .normalize("NFKD").replace(/\p{Diacritic}/gu,"")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .trim().toLowerCase() === "publiee";
 }
 function normalizeOffre(row){
@@ -2061,6 +2061,13 @@ document.body.addEventListener('click', function(e) {
   const nextBtn  = document.getElementById('ms-next');
   const prevBtn  = document.getElementById('ms-prev');
   const skipBtn = document.getElementById('ms-skip');
+prevBtn.onclick = gotoPrevField;
+nextBtn.onclick = handleNext;
+skipBtn.onclick = function(){
+  // passer uniquement les champs non requis
+  const id = state._seq[state._idx];
+  if (id && !REQUIRED.has(id)) gotoNextField();
+};
 
   const stepEls = [1,2,3].map(i => document.getElementById('ms-step-' + i));
 
@@ -2075,6 +2082,53 @@ document.body.addEventListener('click', function(e) {
     // candidature
     candName:'', candProf:'', candDispo:'', candZone:'', candDesc:'', candEmail:'', candTel:''
   };
+  // ⬇️ Ici tu colles le bloc FIELD_SEQ / REQUIRED / isContactPair
+// Sous-étapes (questions) de l'étape 3
+const FIELD_SEQ = {
+  "Offre d'emploi": [
+    "ms-field-offre-prof",     // requis
+    "ms-field-offre-struct",   // optionnel
+    "ms-field-offre-desc",     // optionnel
+    "ms-field-offre-photos",   // optionnel
+    "ms-field-offre-email",    // email/tel au moins un requis
+    "ms-field-offre-contact",  // email/tel au moins un requis
+    "ms-field-offre-captcha"   // requis
+  ],
+  "Location": [
+    "ms-field-loc-desc",       // requis
+    "ms-field-loc-photos",     // optionnel
+    "ms-field-loc-email",      // email/tel au moins un requis
+    "ms-field-loc-contact",    // email/tel au moins un requis
+    "ms-field-loc-captcha"     // requis
+  ],
+  "Candidature": [
+    "ms-field-cand-name",      // requis
+    "ms-field-cand-prof",      // requis
+    "ms-field-cand-dispo",     // optionnel
+    "ms-field-cand-zone",      // optionnel
+    "ms-field-cand-desc",      // optionnel
+    "ms-field-cand-email",     // requis
+    "ms-field-cand-tel",       // optionnel
+    "ms-field-cand-captcha"    // requis
+  ]
+};
+
+const REQUIRED = new Set([
+  "ms-field-offre-prof",
+  "ms-field-offre-captcha",
+  "ms-field-loc-desc",
+  "ms-field-loc-captcha",
+  "ms-field-cand-name",
+  "ms-field-cand-prof",
+  "ms-field-cand-email",
+  "ms-field-cand-captcha"
+]);
+
+function isContactPair(section) {
+  if (section.startsWith("ms-field-offre-")) return ["ms-email","ms-contact"];
+  if (section.startsWith("ms-field-loc-"))   return ["ms-email-loc","ms-contact-loc"];
+  return null;
+}
   
 
   function openSheet(){
@@ -2092,31 +2146,87 @@ function closeSheet(){
   document.getElementById('map').style.pointerEvents = '';      
 }
   function showStep(n){
-    state.step = n;
-    stepEls.forEach((el,i)=> el.classList.toggle('active', i === (n-1)));
+  state.step = n;
+  stepEls.forEach((el,i)=> el.classList.toggle('active', i === (n-1)));
+  prevBtn.style.visibility = (n===1 ? 'hidden' : 'visible');
+  skipBtn.style.display = 'none';
+  nextBtn.textContent = 'Continuer';
 
-    // Ajuste libellé du bouton principal
-    if(n < 3) { nextBtn.textContent = 'Continuer'; }
-    else {
-      if(state.type === "Location")     nextBtn.textContent = 'Publier la location';
-      else if(state.type === "Candidature") nextBtn.textContent = 'Publier ma candidature';
-      else nextBtn.textContent = 'Publier l’offre';
-    }
-    prevBtn.style.visibility = (n===1 ? 'hidden' : 'visible');
+  // Affiche les 3 sous-sections conteneurs (mais on masquera les champs dedans)
+  document.getElementById('ms-details-offre').style.display     = (state.type === "Offre d'emploi") ? 'block' : 'none';
+  document.getElementById('ms-details-location').style.display  = (state.type === "Location") ? 'block' : 'none';
+  document.getElementById('ms-details-cand').style.display      = (state.type === "Candidature") ? 'block' : 'none';
 
-    // Affiche la bonne sous-section à l’étape 3
-    document.getElementById('ms-details-offre').style.display     = (state.type === "Offre d'emploi") ? 'block' : 'none';
-    document.getElementById('ms-details-location').style.display  = (state.type === "Location") ? 'block' : 'none';
-    document.getElementById('ms-details-cand').style.display      = (state.type === "Candidature") ? 'block' : 'none';
-
+  if(n !== 3){
     renderReCaptchaIfNeeded();
+    return;
   }
+
+  // === Étape 3 : on prépare la séquence “une question à la fois” ===
+  state._seq = FIELD_SEQ[state.type] || [];
+  state._idx = 0;
+
+  // cache tous les champs
+  document.querySelectorAll('#ms-step-3 .field').forEach(el => el.style.display = 'none');
+  // montre le premier
+  showCurrentField();
+}
+  function showCurrentField(){
+  // masque tout
+  document.querySelectorAll('#ms-step-3 .field').forEach(el => el.style.display = 'none');
+
+  const id = state._seq[state._idx];
+  const el = document.getElementById(id);
+  if(!id || !el){
+    // plus de questions -> on bascule le bouton en “Publier”
+    nextBtn.textContent = (state.type === "Location")
+      ? 'Publier la location'
+      : (state.type === "Candidature" ? 'Publier ma candidature' : 'Publier l’offre');
+    skipBtn.style.display = 'none';
+    return;
+  }
+
+  // afficher le champ courant
+  el.style.display = 'block';
+
+  // libellé du bouton principal
+  const last = state._idx === state._seq.length - 1;
+  nextBtn.textContent = last
+    ? (state.type === "Location" ? 'Publier la location'
+       : (state.type === "Candidature" ? 'Publier ma candidature' : 'Publier l’offre'))
+    : 'Continuer';
+
+  // bouton "Passer" seulement si non requis
+  const isRequired = REQUIRED.has(id);
+  skipBtn.style.display = isRequired ? 'none' : 'inline-block';
+
+  // rendre recaptcha si c’est ce champ
+  renderReCaptchaIfNeeded();
+}
+
+function gotoNextField(){
+  if (state._idx < (state._seq.length - 1)) {
+    state._idx++;
+    showCurrentField();
+  } else {
+    // fin des questions -> tenter la soumission
+    submitStep3();
+  }
+}
+
+function gotoPrevField(){
+  if (state.step === 3 && state._idx > 0){
+    state._idx--;
+    showCurrentField();
+  } else {
+    showStep(Math.max(1, state.step-1));
+  }
+}
 
   btn && btn.addEventListener('click', openSheet);
   backdrop.addEventListener('click', closeSheet);
   closeBtn.addEventListener('click', closeSheet);
-  prevBtn.addEventListener('click', ()=> showStep(Math.max(1, state.step-1)));
-  nextBtn.addEventListener('click', handleNext);
+  
 
   // Step 1 — choix du type + passage auto à l'étape suivante
 function typeChipHandler(e){
@@ -2234,106 +2344,146 @@ function typeChipHandler(e){
   }
 
   // Navigation
-  async function handleNext(){
-    if(state.step === 1){
-      if(!state.type){ showCarteNotification("Choisis un type d’annonce."); return; }
-      showStep(2);
-      return;
-    }
-    if(state.step === 2){
-      if(!(state.lat && state.lng)){
-        showCarteNotification("Indique une adresse ou utilise ta position.");
-        return;
-      }
-      showStep(3);
-      return;
-    }
+  async function submitStep3(){
+  const captcha = getRecaptchaResponse();
+  if(!captcha){ showCarteNotification("Merci de valider le reCAPTCHA."); return; }
+     if(!canSubmit("mobileSheetSubmit", 5, 60)){
+    showCarteNotification("⚠️ Trop de publications depuis ce navigateur. Réessaie dans 1 heure.");
+    return;
+  }
 
-    // step 3 → soumission
-    // Récup champs
+  const datePublication = (new Date()).toISOString().slice(0,10);
+
+  try{
     if(state.type === "Offre d'emploi"){
-      state.profession = document.getElementById('ms-profession').value.trim();
-      state.struct     = document.getElementById('ms-struct').value.trim();
-      state.desc       = document.getElementById('ms-desc').value.trim();
-      state.photos     = document.getElementById('ms-photos').value.trim();
-      state.email      = document.getElementById('ms-email').value.trim();
-      state.contact    = document.getElementById('ms-contact').value.trim();
-      if(!(state.email || state.contact)){ showCarteNotification("Ajoute un email ou un téléphone."); return; }
+      // vérif pair email/tel (au moins un)
+      if(!(state.email || state.contact)){
+        showCarteNotification("Ajoute un email ou un téléphone."); return;
+      }
       if(!state.profession){ showCarteNotification("Choisis la profession."); return; }
+
+      const payload = {
+        "Titre de l’offre": state.profession,
+        "Nom de la struct": state.struct,
+        "Adresse": state.address,
+        "Latitude": state.lat,
+        "Longitude": state.lng,
+        "Description": state.desc,
+        "Adresse Email": state.email,
+        "Contact": state.contact,
+        "Photos": state.photos,
+        "Date de publication": datePublication,
+        "Statut": "Publiée"
+      };
+      const r = await fetch(API_OFFRES, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+      if(!r.ok) throw new Error('POST offres échoué');
     }
-    if(state.type === "Location"){
-      state.descLoc   = document.getElementById('ms-desc-loc').value.trim();
-      state.photosLoc = document.getElementById('ms-photos-loc').value.trim();
-      state.emailLoc  = document.getElementById('ms-email-loc').value.trim();
-      state.contactLoc= document.getElementById('ms-contact-loc').value.trim();
-      if(!(state.emailLoc || state.contactLoc)){ showCarteNotification("Ajoute un email ou un téléphone."); return; }
+    else if(state.type === "Location"){
+      if(!(state.emailLoc || state.contactLoc)){
+        showCarteNotification("Ajoute un email ou un téléphone."); return;
+      }
       if(!state.descLoc){ showCarteNotification("Ajoute une description."); return; }
+
+      const payload = {
+        Title: "Location via mobile",
+        Adresse: state.address,
+        Latitude: state.lat, Longitude: state.lng,
+        Description: state.descLoc, Email: state.emailLoc, Contact: state.contactLoc,
+        Photos: state.photosLoc, Statut: "Publiée", "Date de publication": datePublication
+      };
+      const r = await fetch(API_LOCATIONS, { method:'POST', headers:{'Content-Type':'application/json','xc-token':API_TOKEN}, body: JSON.stringify(payload) });
+      if(!r.ok) throw new Error('POST locations échoué');
     }
-    if(state.type === "Candidature"){
-      state.candName  = document.getElementById('ms-cand-name').value.trim();
-      state.candProf  = document.getElementById('ms-cand-prof').value.trim();
-      state.candDispo = document.getElementById('ms-cand-dispo').value.trim();
-      state.candZone  = document.getElementById('ms-cand-zone').value.trim();
-      state.candDesc  = document.getElementById('ms-cand-desc').value.trim();
-      state.candEmail = document.getElementById('ms-cand-email').value.trim();
-      state.candTel   = document.getElementById('ms-cand-tel').value.trim();
+    else { // Candidature
       if(!state.candEmail){ showCarteNotification("Ajoute un email pour être contacté."); return; }
       if(!state.candProf){ showCarteNotification("Choisis une profession."); return; }
+
+      const payload = {
+        "Title": "Candidature via mobile",
+        "Nom": state.candName, "Emploi recherché": state.candProf, "Disponibilité": state.candDispo,
+        "Zone": state.candZone, "Description": state.candDesc, "Email": state.candEmail, "Téléphone": state.candTel,
+        "Latitude": state.lat, "Longitude": state.lng, "Statut": "Publiée"
+      };
+      const r = await fetch(API_CANDIDATS, { method:'POST', headers:{'Content-Type':'application/json','xc-token':API_TOKEN}, body: JSON.stringify(payload) });
+      if(!r.ok) throw new Error('POST candidats échoué');
     }
 
-    const captcha = getRecaptchaResponse();
-    if(!captcha){ showCarteNotification("Merci de valider le reCAPTCHA."); return; }
+    resetRecaptcha();
+    closeSheet();
+    showCarteNotification("✅ Annonce publiée !");
+  }catch(err){
+    console.error(err);
+    showCarteNotification("❌ Erreur d’envoi. Réessaie.");
+  }
+}
+async function handleNext(){
+  // Étape 1 → choix type
+  if(state.step === 1){
+    if(!state.type){
+      showCarteNotification("Choisis un type d’annonce.");
+      return;
+    }
+    showStep(2);
+    return;
+  }
 
-    const datePublication = (new Date()).toISOString().slice(0,10);
+  // Étape 2 → adresse / géoloc
+  if(state.step === 2){
+    if(!(state.lat && state.lng)){
+      showCarteNotification("Indique une adresse ou utilise ta position.");
+      return;
+    }
+    showStep(3);
+    return;
+  }
 
-    try{
-      if(state.type === "Offre d'emploi"){
-        const payload = {
-          "Titre de l’offre": state.profession,
-          "Nom de la struct": state.struct,
-          "Adresse": state.address,
-          "Latitude": state.lat,
-          "Longitude": state.lng,
-          "Description": state.desc,
-          "Adresse Email": state.email,
-          "Contact": state.contact,
-          "Photos": state.photos,
-          "Date de publication": datePublication,
-          "Statut": "Publiée"
-        };
-        const r = await fetch(API_OFFRES, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
-        if(!r.ok) throw new Error('POST offres échoué');
-      }
-      else if(state.type === "Location"){
-        const payload = {
-          Title: "Location via mobile",
-          Adresse: state.address,
-          Latitude: state.lat, Longitude: state.lng,
-          Description: state.descLoc, Email: state.emailLoc, Contact: state.contactLoc,
-          Photos: state.photosLoc, Statut: "Publiée", "Date de publication": datePublication
-        };
-        const r = await fetch(API_LOCATIONS, { method:'POST', headers:{'Content-Type':'application/json','xc-token':API_TOKEN}, body: JSON.stringify(payload) });
-        if(!r.ok) throw new Error('POST locations échoué');
-      }
-      else {
-        const payload = {
-          "Title": "Candidature via mobile",
-          "Nom": state.candName, "Emploi recherché": state.candProf, "Disponibilité": state.candDispo,
-          "Zone": state.candZone, "Description": state.candDesc, "Email": state.candEmail, "Téléphone": state.candTel,
-          "Latitude": state.lat, "Longitude": state.lng, "Statut": "Publiée"
-        };
-        const r = await fetch(API_CANDIDATS, { method:'POST', headers:{'Content-Type':'application/json','xc-token':API_TOKEN}, body: JSON.stringify(payload) });
-        if(!r.ok) throw new Error('POST candidats échoué');
-      }
+  // Étape 3 → une question à la fois
+  // On synchronise l'état depuis les inputs visibles
+  if(state.type === "Offre d'emploi"){
+    state.profession = document.getElementById('ms-profession').value.trim();
+    state.struct     = document.getElementById('ms-struct').value.trim();
+    state.desc       = document.getElementById('ms-desc').value.trim();
+    state.photos     = document.getElementById('ms-photos').value.trim();
+    state.email      = document.getElementById('ms-email').value.trim();
+    state.contact    = document.getElementById('ms-contact').value.trim();
+  } else if(state.type === "Location"){
+    state.descLoc    = document.getElementById('ms-desc-loc').value.trim();
+    state.photosLoc  = document.getElementById('ms-photos-loc').value.trim();
+    state.emailLoc   = document.getElementById('ms-email-loc').value.trim();
+    state.contactLoc = document.getElementById('ms-contact-loc').value.trim();
+  } else { // Candidature
+    state.candName   = document.getElementById('ms-cand-name').value.trim();
+    state.candProf   = document.getElementById('ms-cand-prof').value.trim();
+    state.candDispo  = document.getElementById('ms-cand-dispo').value.trim();
+    state.candZone   = document.getElementById('ms-cand-zone').value.trim();
+    state.candDesc   = document.getElementById('ms-cand-desc').value.trim();
+    state.candEmail  = document.getElementById('ms-cand-email').value.trim();
+    state.candTel    = document.getElementById('ms-cand-tel').value.trim();
+  }
 
-      resetRecaptcha();
-      closeSheet();
-      showCarteNotification("✅ Annonce publiée !");
-    }catch(err){
-      console.error(err);
-      showCarteNotification("❌ Erreur d’envoi. Réessaie.");
+  // Champ courant de la séquence
+  const id = state._seq[state._idx];
+
+  // Validation “mini” si requis (simplement non vide)
+  if(id && REQUIRED.has(id)){
+    const el = document.getElementById(id);
+    const input = el && el.querySelector('input, select, textarea');
+    const val = input ? (input.value || '').trim() : 'ok';
+    if(!val){
+      showCarteNotification("Merci de compléter ce champ.");
+      return;
     }
   }
+
+  // Si plus de questions → soumettre
+  if(!id){
+    submitStep3();
+    return;
+  }
+
+  // Sinon on passe au champ suivant
+  gotoNextField();
+}
 
   // Affiche la feuille dès que l’utilisateur tape dans la recherche (optionnel)
   // document.getElementById('rechercheCommune')?.addEventListener('focus', ()=> isMobile && openSheet());
