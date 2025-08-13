@@ -506,26 +506,26 @@
   localStorage.setItem(formKey, JSON.stringify(recent));
   return true;
 }
-    function showCarteNotification(msg, timeout = 2500) {
-  let notif = document.createElement('div');
+ function showCarteNotification(msg, timeout = 2500) {
+  const notif = document.createElement('div');
   notif.textContent = msg;
-  notif.style = `
-    position:fixed;
-    top:40px; left:50%;
-    transform:translateX(-50%);
-    background:#222;
-    color:#fff;
-    font-size:1.15em;
-    padding:13px 30px;
-    border-radius:12px;
-    box-shadow:0 8px 22px #0002;
-    z-index:4000;
-    opacity:0.98;
-    pointer-events:none;
-    transition:opacity 0.2s;
+  notif.style.cssText = `
+    position: fixed;
+    top: 40px; left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    color: #fff;
+    font-size: 1.15em;
+    padding: 13px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 22px #0002;
+    z-index: 4000;
+    opacity: 0.98;
+    pointer-events: none;
+    transition: opacity 0.2s;
   `;
   document.body.appendChild(notif);
-  setTimeout(() => { notif.style.opacity = '0'; }, timeout-350);
+  setTimeout(() => { notif.style.opacity = '0'; }, timeout - 350);
   setTimeout(() => { notif.remove(); }, timeout);
 }
     function cleanNom(str) {
@@ -1625,6 +1625,7 @@ if (!recaptchaResponse) {
   })
   .catch(() => showCarteNotification("❌ Erreur lors de l'ajout."));
 };
+      } 
 map.on('click', function(e) {
   var latlng = e.latlng;
   var popupContent = `
