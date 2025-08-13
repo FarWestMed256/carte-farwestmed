@@ -369,11 +369,13 @@
 /* Mobile only */
 @media (max-width:700px){
   #mobile-publish-btn{
-    position:fixed; right:16px; bottom:calc(var(--footer-h,70px) + 16px);
+    position:fixed; right:16px;
+    /* ← on calcule une marge au-dessus de la barre de recherche */
+    bottom: calc(var(--footer-h,70px) + 72px);
     z-index:5001; pointer-events:auto;
     background:#f9d875; color:#4b3c10; border:none; border-radius:999px;
     padding:12px 18px; font-weight:700; box-shadow:0 6px 22px #0003; font-size:1.05em;
-  }
+}
   #mobile-sheet-backdrop{
     position:fixed; inset:0; background:#0006; display:none; z-index:120000;
   }
@@ -1895,78 +1897,148 @@ document.body.addEventListener('click', function(e) {
       </div>
     </div>
 
-    <!-- Step 3: Détails -->
-    <div class="step" id="ms-step-3">
-      <div id="ms-details-offre">
-        <div class="field">
-          <label>Profession</label>
-          <select id="ms-profession">
-            <option value="">-- Sélectionner --</option>
-            <option>Médecin généraliste</option>
-            <option>Médecin spécialiste</option>
-            <option>Kinésithérapeute</option>
-            <option>Infirmier(e) diplômé(e) d’État (IDE)</option>
-            <option>Orthophoniste</option>
-            <option>Orthoptiste</option>
-            <option>Psychologue</option>
-            <option>Chirurgien-dentiste</option>
-            <option>Pharmacien(ne)</option>
-            <option>Autre professionnel de santé</option>
-            <option>Offre d'emploi pluridisciplinaire</option>
-          </select>
-        </div>
-        <div class="field"><label>Nom de la structure</label><input id="ms-struct" type="text"></div>
-        <div class="field"><label>Description</label><textarea id="ms-desc" rows="4"></textarea></div>
-        <div class="field"><label>Photos</label>
-          <div class="inline">
-            <input id="ms-photos" type="text" placeholder="Liens Cloudinary…" readonly>
-            <button id="ms-upload" class="btn-secondary" type="button">Uploader</button>
-          </div>
-          <div class="small-help">Ajoute des photos (Cloudinary) — optionnel.</div>
-        </div>
-        <div class="field"><label>Email</label><input id="ms-email" type="email" placeholder="Pour recevoir les réponses"></div>
-        <div class="field"><label>Contact (téléphone)</label><input id="ms-contact" type="text" placeholder="06…"></div>
-        <div class="field"><div class="g-recaptcha" id="ms-recaptcha" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div></div>
-      </div>
+ <!-- Step 3: Détails -->
+<div class="step" id="ms-step-3">
+  <!-- Détails spécifiques offre -->
+  <div id="ms-details-offre" style="display:none">
+    <div class="field" id="ms-field-offre-prof">
+      <label>Profession</label>
+      <select id="ms-profession">
+        <option value="">-- Sélectionner --</option>
+        <option>Médecin généraliste</option>
+        <option>Médecin spécialiste</option>
+        <option>Kinésithérapeute</option>
+        <option>Infirmier(e) diplômé(e) d’État (IDE)</option>
+        <option>Orthophoniste</option>
+        <option>Orthoptiste</option>
+        <option>Psychologue</option>
+        <option>Chirurgien-dentiste</option>
+        <option>Pharmacien(ne)</option>
+        <option>Autre professionnel de santé</option>
+        <option>Offre d'emploi pluridisciplinaire</option>
+      </select>
+    </div>
 
-      <!-- Détails spécifiques location -->
-      <div id="ms-details-location" style="display:none">
-        <div class="field"><label>Description</label><textarea id="ms-desc-loc" rows="4"></textarea></div>
-        <div class="field"><label>Photos</label>
-          <div class="inline">
-            <input id="ms-photos-loc" type="text" placeholder="Liens Cloudinary…" readonly>
-            <button id="ms-upload-loc" class="btn-secondary" type="button">Uploader</button>
-          </div>
-        </div>
-        <div class="field"><label>Email</label><input id="ms-email-loc" type="email"></div>
-        <div class="field"><label>Contact (téléphone)</label><input id="ms-contact-loc" type="text"></div>
-        <div class="field"><div class="g-recaptcha" id="ms-recaptcha-loc" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div></div>
-      </div>
+    <div class="field" id="ms-field-offre-struct">
+      <label>Nom de la structure</label>
+      <input id="ms-struct" type="text">
+    </div>
 
-      <!-- Détails spécifiques candidature -->
-      <div id="ms-details-cand" style="display:none">
-        <div class="field"><label>Nom / Prénom</label><input id="ms-cand-name" type="text"></div>
-        <div class="field"><label>Profession</label>
-          <select id="ms-cand-prof">
-            <option value="">-- Sélectionner --</option>
-            <option>Médecin généraliste</option><option>Médecin spécialiste</option><option>Infirmier(e)</option>
-            <option>Kinésithérapeute</option><option>Chirurgien-dentiste</option><option>Orthophoniste</option>
-            <option>Orthoptiste</option><option>Psychologue</option><option>Autre professionnel de santé</option>
-          </select>
-        </div>
-        <div class="field"><label>Disponibilité</label><input id="ms-cand-dispo" type="text" placeholder="Ex: dès octobre"></div>
-        <div class="field"><label>Zone souhaitée (optionnel)</label><input id="ms-cand-zone" type="text"></div>
-        <div class="field"><label>Description</label><textarea id="ms-cand-desc" rows="4"></textarea></div>
-        <div class="field"><label>Email</label><input id="ms-cand-email" type="email"></div>
-        <div class="field"><label>Téléphone</label><input id="ms-cand-tel" type="text"></div>
-        <div class="field"><div class="g-recaptcha" id="ms-recaptcha-cand" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div></div>
+    <div class="field" id="ms-field-offre-desc">
+      <label>Description</label>
+      <textarea id="ms-desc" rows="4"></textarea>
+    </div>
+
+    <div class="field" id="ms-field-offre-photos">
+      <label>Photos</label>
+      <div class="inline">
+        <input id="ms-photos" type="text" placeholder="Liens Cloudinary…" readonly>
+        <button id="ms-upload" class="btn-secondary" type="button">Uploader</button>
       </div>
     </div>
+
+    <div class="field" id="ms-field-offre-email">
+      <label>Email</label>
+      <input id="ms-email" type="email">
+    </div>
+
+    <div class="field" id="ms-field-offre-contact">
+      <label>Contact (téléphone)</label>
+      <input id="ms-contact" type="text">
+    </div>
+
+    <div class="field" id="ms-field-offre-captcha">
+      <div class="g-recaptcha" id="ms-recaptcha" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div>
+    </div>
   </div>
+
+  <!-- Détails spécifiques location -->
+  <div id="ms-details-location" style="display:none">
+    <div class="field" id="ms-field-loc-desc">
+      <label>Description</label>
+      <textarea id="ms-desc-loc" rows="4"></textarea>
+    </div>
+
+    <div class="field" id="ms-field-loc-photos">
+      <label>Photos</label>
+      <div class="inline">
+        <input id="ms-photos-loc" type="text" placeholder="Liens Cloudinary…" readonly>
+        <button id="ms-upload-loc" class="btn-secondary" type="button">Uploader</button>
+      </div>
+    </div>
+
+    <div class="field" id="ms-field-loc-email">
+      <label>Email</label>
+      <input id="ms-email-loc" type="email">
+    </div>
+
+    <div class="field" id="ms-field-loc-contact">
+      <label>Contact (téléphone)</label>
+      <input id="ms-contact-loc" type="text">
+    </div>
+
+    <div class="field" id="ms-field-loc-captcha">
+      <div class="g-recaptcha" id="ms-recaptcha-loc" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div>
+    </div>
+  </div>
+
+  <!-- Détails spécifiques candidature -->
+  <div id="ms-details-cand" style="display:none">
+    <div class="field" id="ms-field-cand-name">
+      <label>Nom / Prénom</label>
+      <input id="ms-cand-name" type="text">
+    </div>
+
+    <div class="field" id="ms-field-cand-prof">
+      <label>Profession</label>
+      <select id="ms-cand-prof">
+        <option value="">-- Sélectionner --</option>
+        <option>Médecin généraliste</option>
+        <option>Médecin spécialiste</option>
+        <option>Infirmier(e)</option>
+        <option>Kinésithérapeute</option>
+        <option>Chirurgien-dentiste</option>
+        <option>Orthophoniste</option>
+        <option>Orthoptiste</option>
+        <option>Psychologue</option>
+        <option>Autre professionnel de santé</option>
+      </select>
+    </div>
+
+    <div class="field" id="ms-field-cand-dispo">
+      <label>Disponibilité</label>
+      <input id="ms-cand-dispo" type="text" placeholder="Ex: dès octobre">
+    </div>
+
+    <div class="field" id="ms-field-cand-zone">
+      <label>Zone souhaitée (optionnel)</label>
+      <input id="ms-cand-zone" type="text">
+    </div>
+
+    <div class="field" id="ms-field-cand-desc">
+      <label>Description</label>
+      <textarea id="ms-cand-desc" rows="4"></textarea>
+    </div>
+
+    <div class="field" id="ms-field-cand-email">
+      <label>Email</label>
+      <input id="ms-cand-email" type="email">
+    </div>
+
+    <div class="field" id="ms-field-cand-tel">
+      <label>Téléphone</label>
+      <input id="ms-cand-tel" type="text">
+    </div>
+
+    <div class="field" id="ms-field-cand-captcha">
+      <div class="g-recaptcha" id="ms-recaptcha-cand" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div>
+    </div>
+  </div>
+</div>
   <div class="ms-actions">
-    <button id="ms-prev" class="btn-secondary" type="button">Retour</button>
-    <button id="ms-next" class="btn-primary" type="button">Continuer</button>
-  </div>
+  <button id="ms-prev" class="btn-secondary" type="button">Retour</button>
+  <button id="ms-skip" class="btn-secondary" type="button" style="display:none">Passer</button>
+  <button id="ms-next" class="btn-primary" type="button">Continuer</button>
 </div>
   <script>
 (function(){
@@ -1988,6 +2060,7 @@ document.body.addEventListener('click', function(e) {
   const closeBtn = document.getElementById('ms-close');
   const nextBtn  = document.getElementById('ms-next');
   const prevBtn  = document.getElementById('ms-prev');
+  const skipBtn = document.getElementById('ms-skip');
 
   const stepEls = [1,2,3].map(i => document.getElementById('ms-step-' + i));
 
@@ -2002,6 +2075,7 @@ document.body.addEventListener('click', function(e) {
     // candidature
     candName:'', candProf:'', candDispo:'', candZone:'', candDesc:'', candEmail:'', candTel:''
   };
+  
 
   function openSheet(){
   backdrop.style.display = 'block';
@@ -2263,6 +2337,20 @@ function typeChipHandler(e){
 
   // Affiche la feuille dès que l’utilisateur tape dans la recherche (optionnel)
   // document.getElementById('rechercheCommune')?.addEventListener('focus', ()=> isMobile && openSheet());
+})();
+</script>
+  <script>
+(function positionPublishBtn(){
+  const btn = document.getElementById('mobile-publish-btn');
+  const footer = document.getElementById('footer-bar');
+  if(!btn || !footer) return;
+  function update(){
+    const h = footer.getBoundingClientRect().height || 70;
+    btn.style.bottom = (h + 72) + 'px';
+  }
+  update();
+  window.addEventListener('resize', update);
+  new ResizeObserver(update).observe(footer);
 })();
 </script>
 </body>
