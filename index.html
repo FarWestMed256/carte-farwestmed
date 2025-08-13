@@ -375,13 +375,13 @@
     padding:12px 18px; font-weight:700; box-shadow:0 6px 22px #0003; font-size:1.05em;
   }
   #mobile-sheet-backdrop{
-    position:fixed; inset:0; background:#0006; display:none; z-index:6000;
+    position:fixed; inset:0; background:#0006; display:none; z-index:120000;
   }
   #mobile-sheet{
     position:fixed; left:0; right:0; bottom:0; max-height:88vh;
     background:#fffbe7; border-top-left-radius:16px; border-top-right-radius:16px;
     box-shadow:0 -12px 28px #0003; transform:translateY(100%); transition:transform .25s ease-out;
-    z-index:6001; display:flex; flex-direction:column;
+    z-index:120001; display:flex; flex-direction:column;
   }
   #mobile-sheet.open{ transform:translateY(0); }
   .ms-header{ padding:14px 16px; border-bottom:1px solid #ffe49c; display:flex; align-items:center; gap:8px;}
@@ -2004,15 +2004,19 @@ document.body.addEventListener('click', function(e) {
   };
 
   function openSheet(){
-    backdrop.style.display = 'block';
-    sheet.classList.add('open');
-    showStep(1);
-    renderReCaptchaIfNeeded();
-  }
-  function closeSheet(){
-    sheet.classList.remove('open');
-    setTimeout(()=> backdrop.style.display='none', 200);
-  }
+  backdrop.style.display = 'block';
+  sheet.classList.add('open');
+  try { map.closePopup(); } catch (_) {} // ferme popups ouverts
+  document.getElementById('map').style.pointerEvents = 'none';  
+  showStep(1);
+  renderReCaptchaIfNeeded();
+}
+
+function closeSheet(){
+  sheet.classList.remove('open');
+  setTimeout(()=> backdrop.style.display='none', 200);
+  document.getElementById('map').style.pointerEvents = '';      
+}
   function showStep(n){
     state.step = n;
     stepEls.forEach((el,i)=> el.classList.toggle('active', i === (n-1)));
@@ -2040,13 +2044,18 @@ document.body.addEventListener('click', function(e) {
   prevBtn.addEventListener('click', ()=> showStep(Math.max(1, state.step-1)));
   nextBtn.addEventListener('click', handleNext);
 
-  // Step 1 — choix du type
-  document.getElementById('ms-type-chips').addEventListener('click', (e)=>{
-    const chip = e.target.closest('.chip'); if(!chip) return;
-    document.querySelectorAll('#ms-type-chips .chip').forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');
-    state.type = chip.dataset.value;
-  });
+  // Step 1 — choix du type + passage auto à l'étape suivante
+function typeChipHandler(e){
+  const chip = e.target.closest('.chip'); if(!chip) return;
+  document.querySelectorAll('#ms-type-chips .chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  state.type = chip.dataset.value;
+  showStep(2); // avance tout de suite après le choix
+}
+
+['click','touchend'].forEach(evt =>
+  document.getElementById('ms-type-chips').addEventListener(evt, typeChipHandler, {passive:true})
+);
 
   // Step 2 — adresse / position
   const addrInput = document.getElementById('ms-address');
