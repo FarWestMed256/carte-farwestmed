@@ -2574,6 +2574,10 @@ async function handleNext(){
   window.addEventListener('resize', update);
   new ResizeObserver(update).observe(footer);
 })();
+    // 🔴 Désactivation globale du reCAPTCHA
+window.getRecaptchaResponse = function(){
+  return "DISABLED_TOKEN";
+};
 </script>
 </body>
 </html>
