@@ -1304,82 +1304,85 @@ Longitude :<br><input type="text" name="lng" value="${latlng.lng}" readonly><br>
       );
     }
   }
-  // ⬇️ AJOUTE ÇA JUSTE APRÈS LA CONFIG CLOUDINARY :
-  if (window.grecaptcha && document.querySelector('#offreForm .g-recaptcha')) {
-    grecaptcha.render(document.querySelector('#offreForm .g-recaptcha'));
-  }
+ if (window.grecaptcha && document.querySelector('#offreForm .g-recaptcha')) {
+  const formEl = document.getElementById('offreForm');
+  grecaptcha.render(document.querySelector('#offreForm .g-recaptcha'), {
+    sitekey: '6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb',
+    callback: (token)=> formEl.dataset.captcha = token || "",
+    'expired-callback': ()=> formEl.dataset.captcha = "",
+    'error-callback':   ()=> formEl.dataset.captcha = ""
+  });
+}
 }, 400);
 
-      document.getElementById('offreForm').onsubmit = function(ev){
-        ev.preventDefault();
-        if (!canSubmit("offreForm", 5, 60)) {
-  showCarteNotification("⚠️ Trop de publications d’offres depuis ce navigateur ! Réessaye dans une heure.");
-  return;
-}
-                let recaptchaResponse = grecaptcha.getResponse();
-if (!recaptchaResponse) {
-  showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
-  return;
-}
-        var form = ev.target;
-        var now = new Date();
-  var datePublication = now.toISOString().slice(0, 10);
-        console.log('Formulaire location soumis');
-        var data = {
-          "Titre de l’offre": form.typeOffre.value,
-          "Nom de la struct": form.structure.value,
-          "Adresse": form.adresse.value,
-          "Latitude": form.lat.value,
-          "Longitude": form.lng.value,
-          "Description": form.description.value,
-          "Adresse Email": form.adresseEmail.value,
-         "Contact": form.contact.value,
-          "Photos": form.photos.value,
-          "Date de publication": datePublication,
-          "Statut": "Publiée"
-        };
+     document.getElementById('offreForm').onsubmit = function(ev) {
+  ev.preventDefault();
 
-     if (!(form.contact.value || form.adresseEmail.value)) {
-  showCarteNotification("⚠️ Veuillez renseigner au moins un moyen de contact (email ou téléphone).");
-  return false;
-}
-
-        fetch(API_OFFRES, {
-  method: "POST",
-  headers: { "Content-Type": "text/plain;charset=utf-8" },
-  body: JSON.stringify(data)
-})
-        .then(response => {
-          if (response.ok) {
-  let gallery = "";
-  if (form.photos.value) {
-    let urls = form.photos.value.split(",");
-    gallery = '<div class="photo-gallery">' +
-      urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
-      '</div>';
+  if (!canSubmit("offreForm", 5, 60)) {
+    showCarteNotification("⚠️ Trop de publications d’offres depuis ce navigateur ! Réessaye dans une heure.");
+    return;
   }
-  L.marker([form.lat.value, form.lng.value])
-    .addTo(map)
-    .bindPopup(
-      `<b>${form.typeOffre.value}</b><br>
-      ${form.structure.value}<br>
-      ${form.adresse.value}<br>
-      ${form.description.value}<br>
-      ${gallery}
-      <b>Contact :</b> ${form.contact.value}<br>
-      ${form.adresseEmail.value ? `<b>Email :</b> ${form.adresseEmail.value}<br>` : ""}
-      <button type="button" class="btn-postuler" data-email="${form.adresseEmail.value}" data-contact="${form.contact.value}">Postuler à cette offre</button>
-      `
-    );
-  grecaptcha.reset();
-  map.closePopup();
-  showCarteNotification("✅ Offre ajoutée !");
-} else {
-  showCarteNotification("❌ Erreur lors de l'ajout de l'offre");
-}
-        });
-      };
-    } 
+
+  const recaptchaResponse = (ev.target.dataset.captcha || "").trim();
+  if (!recaptchaResponse) {
+    showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
+    return;
+  }
+
+  const form = ev.target;
+  if (!(form.contact.value || form.adresseEmail.value)) {
+    showCarteNotification("⚠️ Veuillez renseigner au moins un moyen de contact (email ou téléphone).");
+    return;
+  }
+
+  const now = new Date();
+  const datePublication = now.toISOString().slice(0, 10);
+
+  const data = {
+    "Titre de l’offre": form.typeOffre.value,
+    "Nom de la struct": form.structure.value,
+    "Adresse": form.adresse.value,
+    "Latitude": form.lat.value,
+    "Longitude": form.lng.value,
+    "Description": form.description.value,
+    "Adresse Email": form.adresseEmail.value,
+    "Contact": form.contact.value,
+    "Photos": form.photos.value,
+    "Date de publication": datePublication,
+    "Statut": "Publiée"
+  };
+
+  fetch(API_OFFRES, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(data)
+  }).then(response => {
+    if (response.ok) {
+      let gallery = "";
+      if (form.photos.value) {
+        const urls = form.photos.value.split(",");
+        gallery = '<div class="photo-gallery">' +
+          urls.map(u => u.trim() ? '<img src="'+u.trim()+'" alt="photo" onclick="window.showLightbox(\''+u.trim()+'\')">' : "").join("") +
+          '</div>';
+      }
+      L.marker([form.lat.value, form.lng.value]).addTo(map).bindPopup(
+        `<b>${form.typeOffre.value}</b><br>
+         ${form.structure.value}<br>
+         ${form.adresse.value}<br>
+         ${form.description.value}<br>
+         ${gallery}
+         <b>Contact :</b> ${form.contact.value}<br>
+         ${form.adresseEmail.value ? `<b>Email :</b> ${form.adresseEmail.value}<br>` : ""}
+         <button type="button" class="btn-postuler" data-email="${form.adresseEmail.value}" data-contact="${form.contact.value}">Postuler à cette offre</button>`
+      );
+      grecaptcha.reset();
+      map.closePopup();
+      showCarteNotification("✅ Offre ajoutée !");
+    } else {
+      showCarteNotification("❌ Erreur lors de l'ajout de l'offre");
+    }
+  });
+};
 function afficherFormulaireLocation(latlng) {
   var popupContent = `
     <form id="locationForm">
@@ -1441,10 +1444,15 @@ Contact (téléphone) :<br>
     }
   }
 
-  // <-- C'est ici, à l'intérieur du setTimeout !
-  if (window.grecaptcha && document.querySelector('#locationForm .g-recaptcha')) {
-    grecaptcha.render(document.querySelector('#locationForm .g-recaptcha'));
-  }
+ if (window.grecaptcha && document.querySelector('#locationForm .g-recaptcha')) {
+  const formEl = document.getElementById('locationForm');
+  grecaptcha.render(document.querySelector('#locationForm .g-recaptcha'), {
+    sitekey: '6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb',
+    callback: (token)=> formEl.dataset.captcha = token || "",
+    'expired-callback': ()=> formEl.dataset.captcha = "",
+    'error-callback':   ()=> formEl.dataset.captcha = ""
+  });
+}
 }, 200);
   // Soumission du formulaire location
 document.getElementById('locationForm').onsubmit = function(ev){
@@ -1453,7 +1461,7 @@ document.getElementById('locationForm').onsubmit = function(ev){
     showCarteNotification("⚠️ Trop de demandes pour ce poste depuis ce navigateur ! Réessaye dans une heure.");
     return;
      }
-  let recaptchaResponse = grecaptcha.getResponse();
+const recaptchaResponse = (ev.target.dataset.captcha || "").trim();
 if (!recaptchaResponse) {
   showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
   return;
@@ -1549,56 +1557,73 @@ if (!recaptchaResponse) {
     </form>`;
   L.popup().setLatLng(latlng).setContent(html).openOn(map);
 
-  setTimeout(()=>{ if (window.grecaptcha) grecaptcha.render(document.querySelector('#candidatForm .g-recaptcha')); }, 150);
+  setTimeout(()=>{
+  if (window.grecaptcha && document.querySelector('#candidatForm .g-recaptcha')) {
+    const formEl = document.getElementById('candidatForm');
+    grecaptcha.render(document.querySelector('#candidatForm .g-recaptcha'), {
+      sitekey: '6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb',
+      callback: (token)=> formEl.dataset.captcha = token || "",
+      'expired-callback': ()=> formEl.dataset.captcha = "",
+      'error-callback':   ()=> formEl.dataset.captcha = ""
+    });
+  }
+}, 150);
 
-  document.getElementById('candidatForm').onsubmit = function(ev){
-    ev.preventDefault();
-    if (!canSubmit("candidatForm", 5, 60)) { showCarteNotification("⚠️ Trop de publications depuis ce navigateur, réessaie dans 1h."); return; }
-    const recaptchaResponse = grecaptcha.getResponse();
-    if (!recaptchaResponse) { showCarteNotification("⚠️ Merci de valider le reCAPTCHA."); return; }
+  document.getElementById('candidatForm').onsubmit = function(ev) {
+  ev.preventDefault();
 
-    const f = ev.target;
-    const payload = {
-      "Title": "Candidature via carte",
-      "Nom": f.Nom.value,
-      "Emploi recherché": f["Emploi recherché"].value,
-      "Disponibilité": f["Disponibilité"].value,
-      "Zone": f.Zone.value,
-      "Description": f.Description.value,
-      "Email": f.Email.value,
-      "Téléphone": f["Téléphone"].value,
-      "Latitude": latlng.lat,
-      "Longitude": latlng.lng,
-      "Statut": "Publiée"
-    };
+  if (!canSubmit("candidatForm", 5, 60)) {
+    showCarteNotification("⚠️ Trop de publications depuis ce navigateur, réessaie dans 1h.");
+    return;
+  }
 
-    fetch(API_CANDIDATS, {
-      method: "POST",
-      headers: { "Content-Type":"application/json", "xc-token": API_TOKEN },
-      body: JSON.stringify(payload)
-    })
-    .then(r => r.json())
-    .then(_ => {
-      showCarteNotification("✅ Candidature ajoutée !");
-      // Affichage immédiat
-      const emploi = payload["Emploi recherché"];
-      const tel = payload["Téléphone"];
-      L.marker([latlng.lat, latlng.lng], {icon: candidateIcon})
-        .addTo(candidatsLayer)
-        .bindPopup(
-          `<b>Candidature – ${emploi}</b><br>
-           ${payload.Nom}<br>
-           ${payload.Zone ? `Zone souhaitée : ${payload.Zone}<br>` : ''}
-           Dispo : ${payload["Disponibilité"]}<br>
-           ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(payload.Description||'')))}<br>
-           <b>Contact :</b> ${payload.Email}${tel ? ' · ' + tel : ''}`
-        );
-      grecaptcha.reset();
-      map.closePopup();
-    })
-    .catch(()=> showCarteNotification("❌ Erreur lors de l'ajout."));
+  const recaptchaResponse = (ev.target.dataset.captcha || "").trim();
+  if (!recaptchaResponse) {
+    showCarteNotification("⚠️ Merci de valider le reCAPTCHA.");
+    return;
+  }
+
+  const f = ev.target;
+  const payload = {
+    "Title": "Candidature via carte",
+    "Nom": f.Nom.value,
+    "Emploi recherché": f["Emploi recherché"].value,
+    "Disponibilité": f["Disponibilité"].value,
+    "Zone": f.Zone.value,
+    "Description": f.Description.value,
+    "Email": f.Email.value,
+    "Téléphone": f["Téléphone"].value,
+    "Latitude": latlng.lat,
+    "Longitude": latlng.lng,
+    "Statut": "Publiée"
   };
-}
+
+  fetch(API_CANDIDATS, {
+    method: "POST",
+    headers: { "Content-Type":"application/json", "xc-token": API_TOKEN },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(() => {
+    showCarteNotification("✅ Candidature ajoutée !");
+    // Affichage immédiat sur la carte
+    const emploi = payload["Emploi recherché"];
+    const tel = payload["Téléphone"];
+    L.marker([latlng.lat, latlng.lng], {icon: candidateIcon})
+      .addTo(candidatsLayer)
+      .bindPopup(
+        `<b>Candidature – ${emploi}</b><br>
+         ${payload.Nom}<br>
+         ${payload.Zone ? `Zone souhaitée : ${payload.Zone}<br>` : ''}
+         Dispo : ${payload["Disponibilité"]}<br>
+         ${addLineBreaksBeforeEmoji(forceLineBreaksAfterDot(nl2br(payload.Description||'')))}<br>
+         <b>Contact :</b> ${payload.Email}${tel ? ' · ' + tel : ''}`
+      );
+    grecaptcha.reset();
+    map.closePopup();
+  })
+  .catch(() => showCarteNotification("❌ Erreur lors de l'ajout."));
+};
 map.on('click', function(e) {
   var latlng = e.latlng;
   var popupContent = `
@@ -2315,37 +2340,60 @@ function typeChipHandler(e){
   document.getElementById('ms-upload-loc').addEventListener('click', ()=> openUpload('ms-photos-loc','locations-farwestmed'));
 
   // reCAPTCHA
-  let recaptchaIds = { offre:null, loc:null, cand:null };
-  function renderReCaptchaIfNeeded(){
-    if(!window.grecaptcha || !grecaptcha.render) return;
-    if(state.step !== 3) return;
-    if(state.type === "Offre d'emploi" && !recaptchaIds.offre){
-      recaptchaIds.offre = grecaptcha.render('ms-recaptcha');
-    }
-    if(state.type === "Location" && !recaptchaIds.loc){
-      recaptchaIds.loc = grecaptcha.render('ms-recaptcha-loc');
-    }
-    if(state.type === "Candidature" && !recaptchaIds.cand){
-      recaptchaIds.cand = grecaptcha.render('ms-recaptcha-cand');
-    }
+// — reCAPTCHA (PATCH iOS / mobile) —
+let recaptchaIds   = { offre:null, loc:null, cand:null };
+let recaptchaToken = { offre:"",   loc:"",   cand:""   };
+
+function renderReCaptchaIfNeeded(){
+  if(!window.grecaptcha || !grecaptcha.render) return;
+  if(state.step !== 3) return;
+
+  const mkOpts = (type) => ({
+    sitekey: '6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb',
+    callback: (token)=>{ recaptchaToken[type] = token || ""; },
+    'expired-callback': ()=>{ recaptchaToken[type] = ""; },
+    'error-callback':   ()=>{ recaptchaToken[type] = ""; }
+  });
+
+  if(state.type === "Offre d'emploi" && !recaptchaIds.offre){
+    recaptchaIds.offre = grecaptcha.render('ms-recaptcha', mkOpts('offre'));
   }
-  function getRecaptchaResponse(){
+  if(state.type === "Location" && !recaptchaIds.loc){
+    recaptchaIds.loc = grecaptcha.render('ms-recaptcha-loc', mkOpts('loc'));
+  }
+  if(state.type === "Candidature" && !recaptchaIds.cand){
+    recaptchaIds.cand = grecaptcha.render('ms-recaptcha-cand', mkOpts('cand'));
+  }
+}
+
+function getRecaptchaResponse(){
+  // 1) on privilégie le jeton capturé (fiable iOS)
+  if(state.type === "Offre d'emploi" && recaptchaToken.offre) return recaptchaToken.offre;
+  if(state.type === "Location"        && recaptchaToken.loc)   return recaptchaToken.loc;
+  if(state.type === "Candidature"     && recaptchaToken.cand)  return recaptchaToken.cand;
+
+  // 2) fallback (rarement utile)
+  try{
     if(state.type === "Offre d'emploi" && recaptchaIds.offre!=null) return grecaptcha.getResponse(recaptchaIds.offre);
-    if(state.type === "Location" && recaptchaIds.loc!=null)      return grecaptcha.getResponse(recaptchaIds.loc);
-    if(state.type === "Candidature" && recaptchaIds.cand!=null)  return grecaptcha.getResponse(recaptchaIds.cand);
-    return '';
-  }
-  function resetRecaptcha(){
-    try{
-      if(state.type === "Offre d'emploi" && recaptchaIds.offre!=null) grecaptcha.reset(recaptchaIds.offre);
-      if(state.type === "Location" && recaptchaIds.loc!=null)         grecaptcha.reset(recaptchaIds.loc);
-      if(state.type === "Candidature" && recaptchaIds.cand!=null)     grecaptcha.reset(recaptchaIds.cand);
-    }catch(_){}
-  }
+    if(state.type === "Location"        && recaptchaIds.loc!=null)   return grecaptcha.getResponse(recaptchaIds.loc);
+    if(state.type === "Candidature"     && recaptchaIds.cand!=null)  return grecaptcha.getResponse(recaptchaIds.cand);
+  }catch(_){}
+  return "";
+}
+
+function resetRecaptcha(){
+  try{
+    if(state.type === "Offre d'emploi" && recaptchaIds.offre!=null) grecaptcha.reset(recaptchaIds.offre);
+    if(state.type === "Location"        && recaptchaIds.loc!=null)   grecaptcha.reset(recaptchaIds.loc);
+    if(state.type === "Candidature"     && recaptchaIds.cand!=null)  grecaptcha.reset(recaptchaIds.cand);
+  }catch(_){}
+  recaptchaToken.offre = recaptchaToken.loc = recaptchaToken.cand = "";
+}
 
   // Navigation
   async function submitStep3(){
-  const captcha = getRecaptchaResponse();
+ const captcha = getRecaptchaResponse();
+    console.log('captcha token:', captcha && captcha.slice(0,12)+'…');
   if(!captcha){ showCarteNotification("Merci de valider le reCAPTCHA."); return; }
      if(!canSubmit("mobileSheetSubmit", 5, 60)){
     showCarteNotification("⚠️ Trop de publications depuis ce navigateur. Réessaie dans 1 heure.");
