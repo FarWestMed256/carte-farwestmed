@@ -1392,8 +1392,9 @@ Longitude :<br><input type="text" name="lng" value="${latlng.lng}" readonly><br>
     } else {
       showCarteNotification("❌ Erreur lors de l'ajout de l'offre");
     }
-  });
-};
+  });            // ← ferme .then(...)
+};               // ← ferme onsubmit
+}     
 function afficherFormulaireLocation(latlng) {
   var popupContent = `
     <form id="locationForm">
