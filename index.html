@@ -492,6 +492,16 @@
   </div>
 </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <script>console.log('[A] Début bloc 1');</script>
+  <script>
+  // Logs d’erreurs JS et promesses non gérées
+  window.addEventListener('error', (e) => {
+    console.error('💥 JS error:', e.message, 'at', e.filename+':'+e.lineno+':'+e.colno, e.error);
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    console.error('💥 Unhandled promise rejection:', e.reason);
+  });
+</script>
   <script>
     function canSubmit(formKey, limit = 5, delayMin = 60) {
   const now = Date.now();
@@ -1676,6 +1686,9 @@ if (btnCand) {
 });
    
   </script>
+  <script>console.log('[A] FIN bloc 1');</script>
+  
+  <script>console.log('[B] Début bloc 2');</script>
   <script>
 function toggleSidebar() {
   var sb = document.getElementById('sidebar-mode-emploi');
@@ -1703,6 +1716,8 @@ function toggleSidebar() {
 }
 </script>
   <script src="https://www.google.com/recaptcha/api.js"></script>
+  <script>console.log('[B] FIN bloc 2');</script>
+  <script>console.log('[C] Début bloc 3');</script>
 <script>
 // Remplace TOUT le listener existant par ceci
 document.body.addEventListener('click', async function(e) {
@@ -1804,6 +1819,7 @@ document.body.addEventListener('click', async function(e) {
   }, 80);
 });
 </script>
+  <script>console.log('[C] FIN bloc 3');</script>
   <script>
   function appendContactBlock(btnEl, title) {
   const email = btnEl.getAttribute('data-email') || '';
