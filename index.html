@@ -2057,14 +2057,19 @@ document.body.addEventListener('click', function(e) {
 
     <div class="field" id="ms-field-cand-captcha">
       <div class="g-recaptcha" id="ms-recaptcha-cand" data-sitekey="6LcL9ZYrAAAAACVHhVg6o6Xyj0_y2uR5X0n-URGb"></div>
-    </div>
-  </div>
-</div>
-  <div class="ms-actions">
+       </div> <!-- /#ms-field-cand-captcha -->
+  </div>   <!-- /#ms-details-cand -->
+</div>     <!-- /#ms-step-3 -->
+
+<div class="ms-actions">
   <button id="ms-prev" class="btn-secondary" type="button">Retour</button>
   <button id="ms-skip" class="btn-secondary" type="button" style="display:none">Passer</button>
   <button id="ms-next" class="btn-primary" type="button">Continuer</button>
 </div>
+
+</div> <!-- /.ms-body -->
+</div> <!-- /#mobile-sheet -->
+
   <script>
 (function(){
   const isMobile = window.matchMedia('(max-width:700px)').matches;
