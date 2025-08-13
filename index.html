@@ -763,6 +763,7 @@ function chargerCandidats() {
 
     var map = L.map('map').setView([46.7, 2.5], 6);
 window.map = map; // permet d'y accéder depuis d'autres fonctions
+    window.markersByName = {};
 
 window.addEventListener('resize', () => map.invalidateSize());
 window.addEventListener('orientationchange', () => {
