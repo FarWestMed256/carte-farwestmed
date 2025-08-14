@@ -1334,7 +1334,7 @@ Longitude :<br><input type="text" name="lng" value="${latlng.lng}" readonly><br>
     return;
   }
 
-  const recaptchaResponse = (ev.target.dataset.captcha || "").trim();
+  const recaptchaResponse = (ev.target.dataset.captcha || window.getRecaptchaResponse()).trim();
   if (!recaptchaResponse) {
     showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
     return;
@@ -1473,7 +1473,7 @@ document.getElementById('locationForm').onsubmit = function(ev){
     showCarteNotification("⚠️ Trop de demandes pour ce poste depuis ce navigateur ! Réessaye dans une heure.");
     return;
      }
-const recaptchaResponse = (ev.target.dataset.captcha || "").trim();
+const recaptchaResponse = (ev.target.dataset.captcha || window.getRecaptchaResponse()).trim();
 if (!recaptchaResponse) {
   showCarteNotification("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
   return;
@@ -1589,7 +1589,7 @@ if (!recaptchaResponse) {
     return;
   }
 
-  const recaptchaResponse = (ev.target.dataset.captcha || "").trim();
+  const recaptchaResponse = (ev.target.dataset.captcha || window.getRecaptchaResponse()).trim();
   if (!recaptchaResponse) {
     showCarteNotification("⚠️ Merci de valider le reCAPTCHA.");
     return;
@@ -2500,14 +2500,14 @@ async function handleNext(){
   }
 
   // Étape 2 → adresse / géoloc
-  if(state.step === 2){
-    if(!(state.lat && state.lng)){
-      showCarteNotification("Indique une adresse ou utilise ta position.");
-      return;
-    }
-    showStep(3);
+ if (state.step === 2) {
+  if (!(Number.isFinite(state.lat) && Number.isFinite(state.lng))) {
+    showCarteNotification("Indique une adresse ou utilise ta position.");
     return;
   }
+  showStep(3);
+  return;
+}
 
   // Étape 3 → une question à la fois
   // On synchronise l'état depuis les inputs visibles
@@ -2574,10 +2574,26 @@ async function handleNext(){
   window.addEventListener('resize', update);
   new ResizeObserver(update).observe(footer);
 })();
-    // 🔴 Désactivation globale du reCAPTCHA
-window.getRecaptchaResponse = function(){
-  return "DISABLED_TOKEN";
+</script>
+
+<!-- ❌ EN PROD: supprime ce bypass reCAPTCHA -->
+<!-- Si tu veux garder un mode dev, isole-le derrière un flag "DEBUG" -->
+<script>
+// 🔴 BYPASS reCAPTCHA global (DEV SEULEMENT)
+window.getRecaptchaResponse = function(){ return "DISABLED_TOKEN"; };
+window.grecaptcha = window.grecaptcha || {
+  render(){}, reset(){}, getResponse(){ return "DISABLED_TOKEN"; }
 };
+
+// Force un token sur tous les formulaires qui l'attendent
+document.addEventListener('submit', (e) => {
+  const f = e.target;
+  if (!f) return;
+  if (f.id === 'offreForm' || f.id === 'locationForm' || f.id === 'candidatForm') {
+    if (!f.dataset) f.dataset = {};
+    if (!f.dataset.captcha) f.dataset.captcha = 'DISABLED_TOKEN';
+  }
+}, true);
 </script>
 </body>
 </html>
