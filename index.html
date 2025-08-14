@@ -2390,20 +2390,7 @@ function renderReCaptchaIfNeeded(){
   }
 }
 
-function getRecaptchaResponse(){
-  // 1) on privilégie le jeton capturé (fiable iOS)
-  if(state.type === "Offre d'emploi" && recaptchaToken.offre) return recaptchaToken.offre;
-  if(state.type === "Location"        && recaptchaToken.loc)   return recaptchaToken.loc;
-  if(state.type === "Candidature"     && recaptchaToken.cand)  return recaptchaToken.cand;
 
-  // 2) fallback (rarement utile)
-  try{
-    if(state.type === "Offre d'emploi" && recaptchaIds.offre!=null) return grecaptcha.getResponse(recaptchaIds.offre);
-    if(state.type === "Location"        && recaptchaIds.loc!=null)   return grecaptcha.getResponse(recaptchaIds.loc);
-    if(state.type === "Candidature"     && recaptchaIds.cand!=null)  return grecaptcha.getResponse(recaptchaIds.cand);
-  }catch(_){}
-  return "";
-}
 
 function resetRecaptcha(){
   try{
@@ -2416,9 +2403,7 @@ function resetRecaptcha(){
 
   // Navigation
   async function submitStep3(){
- const captcha = getRecaptchaResponse();
-    console.log('captcha token:', captcha && captcha.slice(0,12)+'…');
-  if(!captcha){ showCarteNotification("Merci de valider le reCAPTCHA."); return; }
+ 
      if(!canSubmit("mobileSheetSubmit", 5, 60)){
     showCarteNotification("⚠️ Trop de publications depuis ce navigateur. Réessaie dans 1 heure.");
     return;
