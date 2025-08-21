@@ -3,6 +3,16 @@
 <head>
   <title>Carte FarwestMed</title>
   <meta charset="utf-8" />
+  <script>
+  // Fake reCAPTCHA: neutralise toutes les vérifs
+  window.grecaptcha = {
+    render: function() { return 0; },
+    getResponse: function() { return "FAKE_OK"; },
+    reset: function() {}
+  };
+  window.__recaptchaLoaded = true;
+  window.getRecaptchaResponse = () => "FAKE_OK";
+  </script>
 <meta http-equiv="Content-Security-Policy"
       content="
         default-src 'self';
